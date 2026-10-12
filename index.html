@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Polygon Swap 3D Spinner – általános (N, K)</title>
+  <title>Polygon Swap 3D Spinner</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +36,7 @@
       </h1>
     </div>
     <div class="flex items-center gap-3 font-mono text-xs text-slate-400">
-      <span>Fázis: <strong id="headerStepDisplay" class="text-white">0.00 / 30</strong></span>
+      <span>Phase: <strong id="headerStepDisplay" class="text-white">0.00 / 30</strong></span>
       <span class="text-slate-600 hidden sm:inline">•</span>
       <span id="activeSwapPairDisplay" class="text-cyan-400 font-semibold hidden sm:inline">1 ↔ 3</span>
     </div>
@@ -44,15 +44,15 @@
 
   <main class="max-w-5xl mx-auto w-full my-auto grid grid-cols-1 lg:grid-cols-12 gap-5 py-4">
 
-    <!-- BAL OLDAL: Spinner -->
+    <!-- LEFT: spinner -->
     <div class="lg:col-span-6 flex flex-col items-center justify-between p-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl backdrop-blur-md shadow-2xl relative overflow-hidden min-h-[380px]">
 
       <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 z-10">
         <span class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          Periódus: <span class="text-slate-200"><span class="periodNum">30</span> swap</span>
+          Period: <span class="text-slate-200"><span class="periodNum">30</span> swaps</span>
         </span>
-        <span id="statusDirectionBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">↻ Óramutató</span>
+        <span id="statusDirectionBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">↻ Clockwise</span>
       </div>
 
       <div class="my-auto py-4 flex items-center justify-center">
@@ -72,120 +72,123 @@
       </div>
 
       <div class="flex items-center gap-1 bg-slate-950/90 border border-slate-800 rounded-xl px-2.5 py-1 text-xs z-10">
-        <span class="text-slate-500 font-mono text-[10px] mr-1">DOBOZ:</span>
-        <button onclick="setBoxSize(36)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="36">36px</button>
-        <button onclick="setBoxSize(48)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="48">48px</button>
-        <button onclick="setBoxSize(80)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="80">80px</button>
-        <button onclick="setBoxSize(144)" class="size-btn px-2 py-0.5 rounded btn-active transition" data-size="144">144px</button>
-        <button onclick="setBoxSize(200)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="200">200px</button>
+        <span class="text-slate-500 font-mono text-[10px] mr-1">BOX:</span>
+        <button class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="36">36px</button>
+        <button class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="48">48px</button>
+        <button class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="80">80px</button>
+        <button class="size-btn px-2 py-0.5 rounded btn-active transition" data-size="144">144px</button>
+        <button class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="200">200px</button>
       </div>
     </div>
 
-    <!-- JOBB OLDAL: Vezérlőpult -->
+    <!-- RIGHT: controls -->
     <div class="lg:col-span-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl p-5 sm:p-6 flex flex-col justify-between gap-4 backdrop-blur-md">
 
-      <!-- 0. Geometria: N és K -->
+      <!-- 0. Geometry: N and K -->
       <div class="bg-slate-950/60 p-3 rounded-2xl border border-cyan-900/60 space-y-2">
-        <div class="text-[11px] font-mono text-cyan-300 uppercase tracking-wider">Geometria (N-szög, K átugrás)</div>
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-mono text-cyan-300 uppercase tracking-wider">Geometry (N-gon, K skipped)</div>
+          <button id="btnCopyLink" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition" title="Copy a link to this exact configuration">⧉ Copy link</button>
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <div class="space-y-1">
             <div class="flex justify-between text-xs font-mono">
-              <span class="text-slate-300">N (CSÚCSOK)</span>
+              <span class="text-slate-300">N (VERTICES)</span>
               <span id="nVal" class="text-white font-bold">5</span>
             </div>
             <input id="nRange" type="range" min="3" max="20" step="1" value="5" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
           </div>
           <div class="space-y-1">
             <div class="flex justify-between text-xs font-mono">
-              <span class="text-slate-300">K (ÁTUGROTT ELEMEK)</span>
+              <span class="text-slate-300">K (SKIPPED ELEMENTS)</span>
               <span id="kVal" class="text-white font-bold">1</span>
             </div>
             <input id="kRange" type="range" min="0" max="3" step="1" value="1" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
           </div>
         </div>
         <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-slate-500 font-mono text-[10px] mr-1 w-16">SORREND:</span>
-          <button id="btnOrderSame" class="order-btn flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition" title="A cserék sorrendje a felső golyó irányába halad: (1,1+K+1), (2,2+K+1), …">Egyező</button>
-          <button id="btnOrderOpp" class="order-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="A cserék sorrendje a felső golyóval ellentétesen halad: (1,…), (N,…), (N−1,…), …">Ellentétes</button>
+          <span class="text-slate-500 font-mono text-[10px] mr-1 w-16">ORDER:</span>
+          <button id="btnOrderSame" class="order-btn flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition" title="Swap order advances in the direction the top ball travels: (1,1+K+1), (2,2+K+1), …">Same</button>
+          <button id="btnOrderOpp" class="order-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Swap order advances against the top ball's direction: (1,…), (N,…), (N−1,…), …">Opposite</button>
         </div>
         <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-slate-500 font-mono text-[10px] mr-1 w-16">FENT/LENT:</span>
-          <button id="btnFlipNone" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Mindig az óramutató irányába haladó golyó van felül">Fix</button>
-          <button id="btnFlipStep" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Felül = óramutató irányú XOR (s mod 2): páros cserénél az első, páratlannál a második megy felül">XOR s</button>
-          <button id="btnFlipRound" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Felül = óramutató irányú XOR (⌊s/N⌋ mod 2): körönként fordul">XOR kör</button>
-          <button id="btnFlipGcd" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Felül = óramutató irányú XOR (⌊s/lnko(K+1,N)⌋ mod 2): ha N-ben több 2-es tényező van, mint K+1-ben, minden golyó szigorúan váltakozik">XOR lnko</button>
-          <button id="btnFlipBalance" class="flip-btn flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition" title="Golyónkénti egyenleg: fent +1, lent −1. A kisebb egyenlegű megy fel; egyenlőnél a kisebb sorszámú (A<B<…)">Egyenleg</button>
+          <span class="text-slate-500 font-mono text-[10px] mr-1 w-16">TOP/BOTTOM:</span>
+          <button id="btnFlipNone" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="The ball moving clockwise is always on top">Fixed</button>
+          <button id="btnFlipStep" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Top = clockwise mover XOR (s mod 2): first member on top for even swaps, second for odd swaps">XOR s</button>
+          <button id="btnFlipRound" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Top = clockwise mover XOR (⌊s/N⌋ mod 2): flips every round">XOR round</button>
+          <button id="btnFlipGcd" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Top = clockwise mover XOR (⌊s/gcd(K+1,N)⌋ mod 2): if N has more factors of 2 than K+1, every ball strictly alternates">XOR gcd</button>
+          <button id="btnFlipBalance" class="flip-btn flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition" title="Per-ball balance: +1 on top, −1 on bottom. Lower balance goes on top; ties go to the lower letter (A<B<…)">Balance</button>
         </div>
         <div id="balanceLine" class="text-[10px] font-mono text-slate-400 hidden"></div>
         <div id="geomInfo" class="text-[10px] font-mono text-slate-400 leading-relaxed"></div>
       </div>
 
-      <!-- 1. Lejátszás & Irány -->
+      <!-- 1. Playback & direction -->
       <div class="space-y-1.5">
-        <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Lejátszás & Irány</div>
+        <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Playback & Direction</div>
         <div class="grid grid-cols-4 gap-1.5 text-xs">
-          <button id="btnPlayPause" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono transition">⏸ Szünet</button>
-          <button id="btnDirCw" class="py-2 rounded-xl btn-active border border-slate-700 transition">↻ Előre</button>
-          <button id="btnDirCcw" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">↺ Vissza</button>
-          <button id="btnDirPingPong" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition" title="Oda-vissza">⇄ Ping-Pong</button>
+          <button id="btnPlayPause" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono transition">⏸ Pause</button>
+          <button id="btnDirCw" class="py-2 rounded-xl btn-active border border-slate-700 transition">↻ Forward</button>
+          <button id="btnDirCcw" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">↺ Reverse</button>
+          <button id="btnDirPingPong" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition" title="Back and forth">⇄ Ping-pong</button>
         </div>
       </div>
 
       <!-- 2. Scrubber -->
       <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 space-y-1.5">
         <div class="flex justify-between items-center text-xs font-mono">
-          <span class="text-cyan-300 font-medium">KÉZI TEKERŐ (0 – <span class="periodNum">30</span> LOOP)</span>
+          <span class="text-cyan-300 font-medium">SCRUBBER (0 – <span class="periodNum">30</span> LOOP)</span>
           <span id="scrubValDisplay" class="text-white font-bold bg-slate-800 px-2 py-0.5 rounded">0.00 / 30</span>
         </div>
         <input id="scrubRange" type="range" min="0" max="30" step="0.02" value="0" class="w-full h-2 bg-slate-800 rounded cursor-pointer">
         <div class="flex justify-between text-[10px] text-slate-500 font-mono">
-          <span>0 (Start)</span>
-          <span><span class="nNum">5</span> (1 kör)</span>
-          <span><span class="periodNum">30</span> (Teljes visszaérkezés)</span>
+          <span>0 (start)</span>
+          <span><span class="nNum">5</span> (1 round)</span>
+          <span><span class="periodNum">30</span> (full return)</span>
         </div>
       </div>
 
-      <!-- 3. Golyók mérete -->
+      <!-- 3. Ball size -->
       <div class="space-y-1 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/80">
         <div class="flex justify-between text-xs font-mono">
-          <span class="text-amber-300 font-medium">GOLYÓK MÉRETE</span>
+          <span class="text-amber-300 font-medium">BALL RADIUS</span>
           <span id="ballSizeVal" class="text-white font-bold">8.5 px</span>
         </div>
         <input id="ballSizeRange" type="range" min="2.0" max="15.0" step="0.5" value="8.5" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer accent-amber-400">
       </div>
 
-      <!-- 4. Átfedés -->
+      <!-- 4. Overlap -->
       <div class="space-y-1">
         <div class="flex justify-between text-xs font-mono">
-          <span class="text-slate-300">ÁTFEDÉS (OVERLAP: 0% – <span id="overlapMaxLabel">50</span>%)</span>
+          <span class="text-slate-300">OVERLAP (0% – <span id="overlapMaxLabel">50</span>%)</span>
           <span id="overlapVal" class="text-[#00D2FC] font-bold">50%</span>
         </div>
         <input id="overlapRange" type="range" min="0" max="50" step="1" value="50" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
         <div id="overlapHint" class="text-[10px] text-slate-500 font-mono"></div>
       </div>
 
-      <!-- 5. Sebesség és mélység -->
+      <!-- 5. Speed and depth -->
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1">
           <div class="flex justify-between text-xs font-mono">
-            <span class="text-slate-400">SEBESSÉG</span>
+            <span class="text-slate-400">SPEED</span>
             <span id="speedVal" class="text-emerald-400 font-semibold">1.0x</span>
           </div>
           <input id="speedRange" type="range" min="0.2" max="4.0" step="0.1" value="1.0" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
         </div>
         <div class="space-y-1">
           <div class="flex justify-between text-xs font-mono">
-            <span class="text-slate-400">3D MÉLYSÉG</span>
+            <span class="text-slate-400">3D DEPTH</span>
             <span id="depthVal" class="text-purple-400 font-semibold">100%</span>
           </div>
           <input id="depthRange" type="range" min="0" max="140" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
         </div>
       </div>
 
-      <!-- 6. Kapcsolók -->
+      <!-- 6. Toggles -->
       <div class="flex items-center gap-2 pt-1">
-        <button id="btnToggleLabels" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-500 border border-slate-700 font-mono text-xs transition">Betűk: KI</button>
-        <button id="btnToggleTrails" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-500 border border-slate-700 font-mono text-xs transition">Nyomvonalak: KI</button>
+        <button id="btnToggleLabels" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-500 border border-slate-700 font-mono text-xs transition">Labels: OFF</button>
+        <button id="btnToggleTrails" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-500 border border-slate-700 font-mono text-xs transition">Trails: OFF</button>
         <button id="btnReset" class="px-3 py-1.5 rounded-lg bg-rose-950/40 text-rose-300 hover:bg-rose-900/50 border border-rose-800 font-mono text-xs transition">↺ Reset</button>
       </div>
     </div>
@@ -194,68 +197,78 @@
   <footer class="max-w-5xl mx-auto w-full py-2.5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-800 gap-2">
     <div id="legend" class="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start"></div>
     <div class="font-mono text-[11px] text-slate-500 whitespace-nowrap">
-      <span class="nNum">5</span> csúcs • i ↔ i+<span class="kPlus1">2</span> • <span class="periodNum">30</span> swap zárt ciklus
+      <span class="nNum">5</span> vertices • i ↔ i+<span class="kPlus1">2</span> • <span class="periodNum">30</span>-swap closed cycle
     </div>
   </footer>
 
   <script>
     // =============================================================
-    // 1. PARAMÉTEREK ÉS GEOMETRIA
-    //    N: csúcsok száma (3–20)
-    //    K: hány elemet ugrik át a csere (0–N-2); az s-edik csere párja: (s, s+K+1) mod N
-    //    Az s-edik csere párja (u, u+K+1). SORREND mód: 'same' u = s, 'opposite' u = -s.
-    //    Alapesetben az u-ból induló (óramutató szerint haladó) golyó megy felül. Ezt a
-    //    FENT/LENT mód XOR-olja egy paritással:
-    //      'none'   nincs váltás (a szerep golyónként fix: aki felül volt, mindig felül marad,
-    //               mert a felső golyó pontosan K+1 lépéssel később kerül újra sorra)
-    //      'step'   flip = s mod 2
-    //      'round'  flip = ⌊s/N⌋ mod 2
-    //      'gcd'    flip = ⌊s/g⌋ mod 2, g = lnko(K+1, N)
-    //      'balance' golyónkénti egyenleg: fent +1, lent −1; a kisebb egyenlegű megy fel,
-    //               egyenlőnél a kisebb sorszámú. Itt az állapot (elrendezés + egyenlegek)
-    //               nem feltétlenül tér vissza a kiindulásba, ezért a loop a ciklus első
-    //               ismétlődő állapotából indul (PREPERIOD lépés után).
-    //    Egy felső golyó K+1, egy alsó N-K-1 lépésenként mozog, ezért a szigorú
-    //    fent-lent-fent váltakozás pontosan akkor érhető el, ha K+1-ben kevesebb 2-es tényező
-    //    van, mint N-ben (ekkor a 'gcd' mód ezt adja). Páratlan N-nél ez sosem teljesül.
+    // 1. PARAMETERS AND GEOMETRY
+    //    N: number of vertices (3–20)
+    //    K: elements skipped by a swap (0–N-2); the s-th swap pairs vertices (u, u+K+1) mod N.
+    //    ORDER mode: 'same' u = s, 'opposite' u = -s.
+    //    By default the ball leaving u (moving clockwise) goes on top. The TOP/BOTTOM mode
+    //    XORs this with a parity, or replaces it with a per-ball balance:
+    //      'none'    no flip (roles are fixed per ball: whoever was on top stays on top,
+    //                because the top ball is picked up again exactly K+1 steps later)
+    //      'step'    flip = s mod 2
+    //      'round'   flip = floor(s/N) mod 2
+    //      'gcd'     flip = floor(s/g) mod 2, g = gcd(K+1, N)
+    //      'balance' per-ball balance: +1 on top, -1 on bottom; the lower balance goes on top,
+    //                ties go to the lower index. Here the full state (layout + balances) need
+    //                not return to the start, so the loop begins at the first repeated state
+    //                (after PREPERIOD swaps).
+    //    A top-type ball moves every K+1 steps, a bottom-type ball every N-K-1 steps, so a strict
+    //    top-bottom-top alternation is achievable exactly when K+1 has fewer factors of 2 than N
+    //    (then the 'gcd' mode delivers it). For odd N this is never the case.
     // =============================================================
     const RADIUS = 64;
     const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const BASE_PALETTE = [ // az eredeti 5 szín, N=5-nél ezt használjuk
-      { color: '#00D2FC', stops: ['#ffffff', '#72f2ff', '#00D2FC', '#005063'], name: 'Világoskék' },
-      { color: '#3E1B93', stops: ['#beb0ff', '#6a42e0', '#3E1B93', '#120436'], name: 'Indigó' },
+    const BASE_PALETTE = [ // the original five colours, used when N = 5
+      { color: '#00D2FC', stops: ['#ffffff', '#72f2ff', '#00D2FC', '#005063'], name: 'Light blue' },
+      { color: '#3E1B93', stops: ['#beb0ff', '#6a42e0', '#3E1B93', '#120436'], name: 'Indigo' },
       { color: '#D1125A', stops: ['#ffa1c3', '#f22c7a', '#D1125A', '#4d001b'], name: 'Magenta' },
-      { color: '#FF9F1C', stops: ['#fff1bc', '#ffb648', '#FF9F1C', '#6b3a00'], name: 'Arany' },
-      { color: '#005030', stops: ['#4fd997', '#0f7a4e', '#005030', '#001a0e'], name: 'Sötétzöld' }
+      { color: '#FF9F1C', stops: ['#fff1bc', '#ffb648', '#FF9F1C', '#6b3a00'], name: 'Gold' },
+      { color: '#005030', stops: ['#4fd997', '#0f7a4e', '#005030', '#001a0e'], name: 'Dark green' }
     ];
 
-    let N = 5;
-    let K = 1;
-    let orderMode = 'same';      // 'same' | 'opposite'
-    let flipMode = 'balance';    // 'none' | 'step' | 'round' | 'gcd' | 'balance'
-    let PREPERIOD = 0;           // hány csere után kezdődik a loop (csak 'balance' módban lehet > 0)
-    let balSeq = [];             // balSeq[s][ball] = egyenleg a loop s-edik cseréje ELŐTT
-    let swapSeq = [];            // swapSeq[s] = [u, v] az s-edik cseréhez (s < PERIOD)
-    let flipSeq = [];            // flipSeq[s] = true, ha az s-edik cserében a második tag megy felül
-    let jMinGlobal = 1;
-    let roleMix = { mixed: 0, rate: 0, patterns: [] };
+    // ---- Shareable state (synced to the URL query string) ----
+    const DEFAULTS = {
+      n: 5, k: 1, order: 'same', layer: 'balance', overlap: 50, speed: 1.0, depth: 100,
+      r: 8.5, box: 144, dir: 'cw', labels: 0, trails: 0
+    };
+    const ORDER_MODES = ['same', 'opposite'];
+    const LAYER_MODES = ['none', 'step', 'round', 'gcd', 'balance'];
+    const DIR_MODES = ['cw', 'ccw', 'pingpong'];
+    const BOX_SIZES = [36, 48, 80, 144, 200];
+
+    let N = DEFAULTS.n;
+    let K = DEFAULTS.k;
+    let orderMode = DEFAULTS.order;   // 'same' | 'opposite'
+    let flipMode = DEFAULTS.layer;    // 'none' | 'step' | 'round' | 'gcd' | 'balance'
     let VERTICES = [];
-    let SWAPS = [];
+    let SWAPS = [];                   // the N distinct swap pairs (used for the trail lines)
     let BALL_DEFS = [];
     let PERIOD = 1;
-    let MAX_OVERLAP = 50;   // százalék
-    let ballPosAfterStep = [];
+    let PREPERIOD = 0;                // swaps before the loop starts (> 0 only in 'balance' mode)
+    let MAX_OVERLAP = 50;             // percent
+    let ballPosAfterStep = [];        // ballPosAfterStep[ball][s] = vertex of the ball after loop step s
+    let swapSeq = [];                 // swapSeq[s] = [u, v] for loop step s
+    let flipSeq = [];                 // flipSeq[s] = true if the second member (from v) goes on top
+    let balSeq = [];                  // balSeq[s][ball] = balance BEFORE loop step s
+    let jMinGlobal = 1;
+    let roleMix = { mixed: 0, rate: 0, patterns: [] };
 
     function buildGeometry() {
       VERTICES = [];
       for (let i = 0; i < N; i++) {
-        const angle = -Math.PI / 2 + (i * 2 * Math.PI / N); // SVG y lefelé → növekvő i = óramutató
+        const angle = -Math.PI / 2 + (i * 2 * Math.PI / N); // SVG y points down, so increasing i = clockwise
         VERTICES.push({ x: RADIUS * Math.cos(angle), y: RADIUS * Math.sin(angle) });
       }
       SWAPS = [];
       for (let i = 0; i < N; i++) SWAPS.push([i, (i + K + 1) % N]);
 
-      // Színek: N=5-nél az eredeti paletta, egyébként egyenletes színkör
+      // Colours: original palette for N = 5, otherwise evenly spaced hues
       BALL_DEFS = [];
       for (let i = 0; i < N; i++) {
         let def;
@@ -274,7 +287,7 @@
     }
 
     // =============================================================
-    // 2. CSERE-SORREND, RÉTEG-VÁLTÁS ÉS PERIÓDUS
+    // 2. SWAP ORDER, LAYER FLIP AND PERIOD
     // =============================================================
     const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
 
@@ -289,7 +302,7 @@
       if (flipMode === 'gcd') return (Math.floor(s / gcd(K + 1, N)) % 2) === 1;
       return false;
     }
-    // A menetrend (pár + flip) ismétlődési hossza: N legkisebb többszöröse, amire a flip is ismétlődik
+    // Repeat length of the schedule (pair + flip): the smallest multiple of N on which the flip repeats
     function scheduleLength() {
       let L = N;
       while (true) {
@@ -300,8 +313,8 @@
       }
     }
 
-    // Legkisebb j, amelyre az s és s+j csere közös csúcson osztozik. Egy csere legfeljebb
-    // jMin lépésig tarthat, hogy soha ne mozogjon egy golyó két cserében egyszerre.
+    // Smallest j such that swaps s and s+j share a vertex. A swap may last at most jMin steps
+    // so that no ball is ever part of two swaps at once.
     function computeJMin() {
       let jMin = N;
       for (let s = 0; s < N; s++) {
@@ -318,9 +331,9 @@
       jMinGlobal = computeJMin();
       MAX_OVERLAP = Math.floor(100 * (1 - 1 / jMinGlobal));
 
-      // Szimuláció az első ismétlődő teljes állapotig. Állapot = (menetrend fázisa, elrendezés,
-      // egyenlegek). Paritásos módokban az elrendezés-dinamika bijekció, ezért az első ismétlődés
-      // maga a kiindulási állapot (PREPERIOD = 0). 'balance' módban lehet előperiódus.
+      // Simulate until the first repeated full state. State = (schedule phase, layout, balances).
+      // In the parity modes the layout dynamics is a bijection, so the first repeat is the initial
+      // state itself (PREPERIOD = 0). In 'balance' mode there may be a pre-period.
       const isBalance = flipMode === 'balance';
       const L = isBalance ? N : scheduleLength();
       const layout = Array.from({ length: N }, (_, i) => i);
@@ -336,14 +349,14 @@
         const [u, v] = pairAt(s);
         const a = layout[u], b = layout[v];
         let f;
-        if (isBalance) f = !(bal[a] < bal[b] || (bal[a] === bal[b] && a < b)); // f=true: a v-beli (b) megy felül
+        if (isBalance) f = !(bal[a] < bal[b] || (bal[a] === bal[b] && a < b)); // f = true: the ball from v (b) goes on top
         else f = flipAt(s);
         const top = f ? b : a, bot = f ? a : b;
         if (isBalance) { bal[top] += 1; bal[bot] -= 1; }
         pairHist.push([u, v]); flipHist.push(f);
         [layout[u], layout[v]] = [layout[v], layout[u]];
         s++;
-        if (s > 300000) throw new Error('A csere-sorozat nem zárul be');
+        if (s > 300000) throw new Error('The swap sequence does not close');
       }
       PERIOD = per; PREPERIOD = pre;
       swapSeq = pairHist.slice(pre, pre + per);
@@ -355,16 +368,16 @@
         for (let v = 0; v < N; v++) ballPosAfterStep[lay[v]][t] = v;
       }
 
-      // Statisztika a megfigyeléshez (a loop szakaszán)
+      // Statistics for observation (over the loop section)
       const patterns = Array.from({ length: N }, () => []);
       for (let t = 0; t < per; t++) {
         const lay = posHist[pre + t], [u, v] = swapSeq[t], f = flipSeq[t];
-        patterns[f ? lay[v] : lay[u]].push('F'); patterns[f ? lay[u] : lay[v]].push('L');
+        patterns[f ? lay[v] : lay[u]].push('T'); patterns[f ? lay[u] : lay[v]].push('B');
       }
       let flips = 0, moves = 0;
       patterns.forEach(pt => { moves += pt.length; for (let i = 0; i < pt.length; i++) if (pt[i] !== pt[(i - 1 + pt.length) % pt.length]) flips++; });
       roleMix = {
-        mixed: patterns.filter(pt => pt.includes('F') && pt.includes('L')).length,
+        mixed: patterns.filter(pt => pt.includes('T') && pt.includes('B')).length,
         rate: moves ? flips / moves : 0,
         patterns
       };
@@ -379,19 +392,19 @@
     }
 
     // =============================================================
-    // 3. FOLYTONOS 3D POZÍCIÓ
+    // 3. CONTINUOUS 3D POSITION
     // =============================================================
     function smoothEase(t) { return 0.5 - 0.5 * Math.cos(Math.PI * t); }
 
     function calculateBallState(ballIdx, t, overlapRatio, depthFactor) {
-      const duration = 1.0 / (1.0 - overlapRatio); // csere hossza lépésegységben
+      const duration = 1.0 / (1.0 - overlapRatio); // swap length in step units
       const floorT = Math.floor(t);
       const earliest = floorT - Math.ceil(duration);
 
       for (let s = earliest; s <= floorT + 1; s++) {
         const startVertex = getBallVertexAtBoundary(ballIdx, s);
         const endVertex = getBallVertexAtBoundary(ballIdx, s + 1);
-        if (startVertex === endVertex) continue; // ebben a cserében nem mozog
+        if (startVertex === endVertex) continue; // this ball does not move in swap s
 
         const dt = t - s;
         if (dt < 0 || dt > duration) continue;
@@ -404,7 +417,7 @@
         const x = p0.x + (p1.x - p0.x) * eased;
         const y = p0.y + (p1.y - p0.y) * eased;
 
-        const isForward = (startVertex === swapAt(s)[0]) !== flipOf(s); // óramutató irányú XOR réteg-váltás → felül
+        const isForward = (startVertex === swapAt(s)[0]) !== flipOf(s); // clockwise mover XOR layer flip → on top
 
         if (isForward) {
           return {
@@ -429,17 +442,17 @@
     }
 
     // =============================================================
-    // 4. SVG ELEMEK (újraépítés minden N/K váltásnál)
+    // 4. SVG ELEMENTS (rebuilt on every N/K change)
     // =============================================================
     const svgDefs = document.getElementById('svgDefs');
     const dotsLayer = document.getElementById('dotsLayer');
     const trailsLayer = document.getElementById('trailsLayer');
     const legend = document.getElementById('legend');
     let ballNodes = [];
-    let currentBaseRadius = 8.5;
+    let currentBaseRadius = DEFAULTS.r;
 
     function buildSvg() {
-      // Gradiensek
+      // Gradients
       svgDefs.querySelectorAll('radialGradient[id^="grad-"]').forEach(g => g.remove());
       BALL_DEFS.forEach((d, i) => {
         const grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
@@ -453,7 +466,7 @@
         svgDefs.appendChild(grad);
       });
 
-      // Nyomvonalak
+      // Trails
       trailsLayer.innerHTML = '';
       SWAPS.forEach(([u, v]) => {
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -464,7 +477,7 @@
         trailsLayer.appendChild(line);
       });
 
-      // Golyók
+      // Balls
       dotsLayer.innerHTML = '';
       ballNodes = [];
       BALL_DEFS.forEach((bDef, i) => {
@@ -488,7 +501,7 @@
       });
       updateBallRadius(currentBaseRadius);
 
-      // Jelmagyarázat
+      // Legend
       legend.innerHTML = '';
       BALL_DEFS.forEach(d => {
         const item = document.createElement('div');
@@ -499,16 +512,17 @@
     }
 
     // =============================================================
-    // 5. VEZÉRLÉS
+    // 5. CONTROLS
     // =============================================================
-    let overlapPercent = 50;
-    let speedMultiplier = 1.0;
-    let depthIntensity = 1.0;
+    let overlapPercent = DEFAULTS.overlap;
+    let speedMultiplier = DEFAULTS.speed;
+    let depthIntensity = DEFAULTS.depth / 100;
     let modeDirection = 1; // 1: CW, -1: CCW, 'pingpong'
     let currentDirSign = 1;
     let isPaused = false;
-    let showLabels = false;
-    let showTrails = false;
+    let showLabels = !!DEFAULTS.labels;
+    let showTrails = !!DEFAULTS.trails;
+    let boxSize = DEFAULTS.box;
     let globalT = 0.0;
     let lastStamp = performance.now();
 
@@ -542,6 +556,51 @@
     const btnReset = $('btnReset');
     const statusDirectionBadge = $('statusDirectionBadge');
 
+    // ---- URL state: read on load, write on every change (SPA style, no reload) ----
+    function dirKey() { return modeDirection === 1 ? 'cw' : modeDirection === -1 ? 'ccw' : 'pingpong'; }
+    function currentState() {
+      return {
+        n: N, k: K, order: orderMode, layer: flipMode, overlap: overlapPercent, speed: speedMultiplier,
+        depth: Math.round(depthIntensity * 100), r: currentBaseRadius, box: boxSize, dir: dirKey(),
+        labels: showLabels ? 1 : 0, trails: showTrails ? 1 : 0
+      };
+    }
+    function syncUrl() {
+      const st = currentState();
+      const params = new URLSearchParams();
+      for (const key of Object.keys(DEFAULTS)) {
+        if (String(st[key]) !== String(DEFAULTS[key])) params.set(key, st[key]); // only non-defaults keep links short
+      }
+      const qs = params.toString();
+      const url = location.pathname + (qs ? '?' + qs : '') + location.hash;
+      history.replaceState(null, '', url);
+    }
+    function readUrl() {
+      const p = new URLSearchParams(location.search);
+      const num = (key, lo, hi, step) => {
+        if (!p.has(key)) return DEFAULTS[key];
+        let v = parseFloat(p.get(key));
+        if (!isFinite(v)) return DEFAULTS[key];
+        v = Math.min(hi, Math.max(lo, v));
+        return step ? Math.round(v / step) * step : v;
+      };
+      const pick = (key, list) => list.includes(p.get(key)) ? p.get(key) : DEFAULTS[key];
+      N = num('n', 3, 20, 1);
+      K = Math.min(N - 2, num('k', 0, 18, 1));
+      orderMode = pick('order', ORDER_MODES);
+      flipMode = pick('layer', LAYER_MODES);
+      overlapPercent = num('overlap', 0, 99, 1);
+      speedMultiplier = num('speed', 0.2, 4.0, 0.1);
+      depthIntensity = num('depth', 0, 140, 5) / 100;
+      currentBaseRadius = num('r', 2, 15, 0.5);
+      const box = num('box', 36, 200, 1);
+      boxSize = BOX_SIZES.includes(box) ? box : DEFAULTS.box;
+      const dir = pick('dir', DIR_MODES);
+      modeDirection = dir === 'cw' ? 1 : dir === 'ccw' ? -1 : 'pingpong';
+      showLabels = p.get('labels') === '1';
+      showTrails = p.get('trails') === '1';
+    }
+
     function updateBallRadius(newR) {
       currentBaseRadius = newR;
       ballNodes.forEach(({ circle, shine, text }) => {
@@ -551,18 +610,20 @@
       });
     }
 
-    // Teljes újraépítés N vagy K változásakor
+    // Full rebuild when N, K, order or layer mode changes
     function rebuild() {
       buildGeometry();
       buildPeriod();
       buildSvg();
 
-      // K csúszka tartománya N-hez igazodik (K = N-1 önmagával cserélne, ezért N-2 a max)
+      // K slider range follows N (K = N-1 would swap a ball with itself, so N-2 is the max)
       kRange.max = N - 2;
+      kRange.value = K;
+      nRange.value = N;
       kVal.textContent = K;
       nVal.textContent = N;
 
-      // Átfedés korlátozása
+      // Overlap limit
       overlapRange.max = MAX_OVERLAP;
       overlapRange.disabled = (MAX_OVERLAP === 0);
       if (overlapPercent > MAX_OVERLAP) overlapPercent = MAX_OVERLAP;
@@ -570,10 +631,10 @@
       overlapVal.textContent = `${overlapPercent}%`;
       overlapMaxLabel.textContent = MAX_OVERLAP;
       overlapHint.textContent = MAX_OVERLAP === 0
-        ? 'Egymás utáni cserék közös csúcson osztoznak → nincs átfedés'
-        : `Az s és s+${jMinGlobal} csere oszt közös csúcsot → egy csere legfeljebb ${jMinGlobal} lépésig tarthat → max ${MAX_OVERLAP}%`;
+        ? 'Consecutive swaps share a vertex → no overlap possible'
+        : `Swaps s and s+${jMinGlobal} share a vertex → a swap may last at most ${jMinGlobal} steps → max ${MAX_OVERLAP}%`;
 
-      // Feliratok
+      // Labels
       document.querySelectorAll('.periodNum').forEach(el => el.textContent = PERIOD);
       document.querySelectorAll('.nNum').forEach(el => el.textContent = N);
       document.querySelectorAll('.kPlus1').forEach(el => el.textContent = K + 1);
@@ -584,21 +645,22 @@
       const v2 = x => { let c = 0; while (x % 2 === 0) { x /= 2; c++; } return c; };
       const strictPossible = v2(K + 1) < v2(N);
       const roleTxt = roleMix.mixed === 0
-        ? `<span class="text-amber-300">${roleMix.patterns.filter(pt => pt[0] === 'F').length} golyó mindig fent, ${roleMix.patterns.filter(pt => pt[0] === 'L').length} mindig lent</span>`
-        : `<span class="text-emerald-300">${roleMix.mixed}/${N} golyó jár fent is, lent is</span>, váltási arány ${(roleMix.rate * 100).toFixed(0)}%${roleMix.rate === 1 ? ' (szigorú F-L-F-L)' : ''}`;
+        ? `<span class="text-amber-300">${roleMix.patterns.filter(pt => pt[0] === 'T').length} balls always on top, ${roleMix.patterns.filter(pt => pt[0] === 'B').length} always on bottom</span>`
+        : `<span class="text-emerald-300">${roleMix.mixed}/${N} balls visit both layers</span>, flip rate ${(roleMix.rate * 100).toFixed(0)}%${roleMix.rate === 1 ? ' (strict T-B-T-B)' : ''}`;
       const preTxt = PREPERIOD > 0
-        ? `<br><span class="text-amber-300">Előperiódus: ${PREPERIOD} csere</span> – a loop a ${PREPERIOD}. csere utáni állapotból indul, kezdő elrendezés: ${Array.from({ length: N }, (_, v) => LETTERS[ballPosAfterStep.findIndex(arr => arr[0] === v)]).join('')}`
+        ? `<br><span class="text-amber-300">Pre-period: ${PREPERIOD} swaps</span> – the loop starts from the state after swap ${PREPERIOD}, initial layout: ${Array.from({ length: N }, (_, v) => LETTERS[ballPosAfterStep.findIndex(arr => arr[0] === v)]).join('')}`
         : '';
       $('balanceLine').classList.toggle('hidden', flipMode !== 'balance');
       geomInfo.innerHTML =
-        `Cserék: ` + swapSeq.slice(0, Math.min(PERIOD, 7)).map(([u, v], i) => flipSeq[i] ? `<u>${u + 1}-${v + 1}</u>` : `${u + 1}-${v + 1}`).join(', ') + (PERIOD > 7 ? ', …' : '') +
-        ` <span class="text-slate-600">(aláhúzva: a második tag megy felül)</span>` +
-        `<br>Periódus: <b class="text-white">${PERIOD}</b> swap (${PERIOD / N} kör) · ${roleTxt}` +
-        `<br>lnko(K+1,N)=${g} · N/lnko=${N / g} ${N / g % 2 === 0 ? 'páros' : 'páratlan'} · szigorú paritásos váltakozás ${strictPossible ? 'lehetséges (XOR lnko)' : 'nem lehetséges'}` + preTxt;
+        `Swaps: ` + swapSeq.slice(0, Math.min(PERIOD, 7)).map(([u, v], i) => flipSeq[i] ? `<u>${u + 1}-${v + 1}</u>` : `${u + 1}-${v + 1}`).join(', ') + (PERIOD > 7 ? ', …' : '') +
+        ` <span class="text-slate-600">(underlined: second member goes on top)</span>` +
+        `<br>Period: <b class="text-white">${PERIOD}</b> swaps (${PERIOD / N} rounds) · ${roleTxt}` +
+        `<br>gcd(K+1,N)=${g} · N/gcd=${N / g} ${N / g % 2 === 0 ? 'even' : 'odd'} · strict parity alternation ${strictPossible ? 'possible (XOR gcd)' : 'not possible'}` + preTxt;
 
       globalT = 0;
       currentDirSign = 1;
       renderFrame(globalT);
+      syncUrl();
     }
 
     function renderFrame(timeVal) {
@@ -606,7 +668,7 @@
       const states = [];
       for (let i = 0; i < N; i++) states.push({ idx: i, state: calculateBallState(i, timeVal, overlapRatio, depthIntensity) });
 
-      states.sort((a, b) => a.state.z - b.state.z); // közelebbi golyó a DOM-ban hátrébb = felül
+      states.sort((a, b) => a.state.z - b.state.z); // nearer ball later in the DOM = drawn on top
 
       states.forEach(({ idx, state }) => {
         const node = ballNodes[idx];
@@ -626,10 +688,10 @@
       const stepIdx = Math.floor(normalizedT);
       const activeSwap = swapAt(stepIdx);
       const topFrom = flipOf(stepIdx) ? activeSwap[1] : activeSwap[0];
-      activeSwapPairDisplay.textContent = `#${stepIdx}: ${activeSwap[0] + 1} ↔ ${activeSwap[1] + 1} (felül a ${topFrom + 1}-ről induló)`;
+      activeSwapPairDisplay.textContent = `#${stepIdx}: ${activeSwap[0] + 1} ↔ ${activeSwap[1] + 1} (top: ball from ${topFrom + 1})`;
       if (flipMode === 'balance') {
         const bal = balSeq[stepIdx];
-        $('balanceLine').innerHTML = 'Egyenleg: ' + bal.map((b, i) => `<b style="color:${BALL_DEFS[i].color}">${LETTERS[i]}</b>${b > 0 ? '+' : ''}${b}`).join(' ');
+        $('balanceLine').innerHTML = 'Balance: ' + bal.map((b, i) => `<b style="color:${BALL_DEFS[i].color}">${LETTERS[i]}</b>${b > 0 ? '+' : ''}${b}`).join(' ');
       }
     }
 
@@ -644,14 +706,15 @@
           else if (globalT <= 0) { globalT = 0; currentDirSign = 1; }
         } else {
           globalT += stepRate * modeDirection;
-          globalT = ((globalT % PERIOD) + PERIOD) % PERIOD; // ne nőjön a végtelenbe
+          globalT = ((globalT % PERIOD) + PERIOD) % PERIOD; // keep it bounded
         }
         renderFrame(globalT);
       }
       requestAnimationFrame(animate);
     }
 
-    function setBoxSize(px) {
+    function setBoxSize(px, sync = true) {
+      boxSize = px;
       spinnerWrapper.style.width = px + 'px';
       spinnerWrapper.style.height = px + 'px';
       document.querySelectorAll('.size-btn').forEach(btn => {
@@ -659,13 +722,54 @@
           ? 'size-btn px-2 py-0.5 rounded btn-active transition'
           : 'size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition';
       });
+      if (sync) syncUrl();
     }
 
-    // --- Eseménykezelők ---
+    // ---- UI refresh from state (used on load) ----
+    const BTN_OFF = 'flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition';
+    const BTN_ON = 'flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition';
+    function refreshModeButtons() {
+      $('btnOrderSame').className = 'order-btn ' + (orderMode === 'same' ? BTN_ON : BTN_OFF);
+      $('btnOrderOpp').className = 'order-btn ' + (orderMode === 'opposite' ? BTN_ON : BTN_OFF);
+      $('btnFlipNone').className = 'flip-btn ' + (flipMode === 'none' ? BTN_ON : BTN_OFF);
+      $('btnFlipStep').className = 'flip-btn ' + (flipMode === 'step' ? BTN_ON : BTN_OFF);
+      $('btnFlipRound').className = 'flip-btn ' + (flipMode === 'round' ? BTN_ON : BTN_OFF);
+      $('btnFlipGcd').className = 'flip-btn ' + (flipMode === 'gcd' ? BTN_ON : BTN_OFF);
+      $('btnFlipBalance').className = 'flip-btn ' + (flipMode === 'balance' ? BTN_ON : BTN_OFF);
+    }
+    function refreshSimpleControls() {
+      ballSizeRange.value = currentBaseRadius;
+      ballSizeVal.textContent = `${currentBaseRadius.toFixed(1)} px`;
+      speedRange.value = speedMultiplier;
+      speedVal.textContent = `${speedMultiplier.toFixed(1)}x`;
+      depthRange.value = Math.round(depthIntensity * 100);
+      depthVal.textContent = `${Math.round(depthIntensity * 100)}%`;
+      btnToggleLabels.textContent = showLabels ? 'Labels: ON' : 'Labels: OFF';
+      btnToggleLabels.classList.toggle('text-slate-500', !showLabels);
+      btnToggleLabels.classList.toggle('text-slate-200', showLabels);
+      btnToggleTrails.textContent = showTrails ? 'Trails: ON' : 'Trails: OFF';
+      btnToggleTrails.classList.toggle('text-slate-500', !showTrails);
+      btnToggleTrails.classList.toggle('text-slate-200', showTrails);
+      trailsLayer.style.display = showTrails ? 'block' : 'none';
+      setBoxSize(boxSize, false);
+      setDirectionMode(modeDirection, false);
+    }
+
+    // ---- Event handlers ----
+    function setOrderMode(mode) { orderMode = mode; refreshModeButtons(); rebuild(); }
+    function setFlipMode(mode) { flipMode = mode; refreshModeButtons(); rebuild(); }
+    $('btnOrderSame').addEventListener('click', () => setOrderMode('same'));
+    $('btnOrderOpp').addEventListener('click', () => setOrderMode('opposite'));
+    $('btnFlipNone').addEventListener('click', () => setFlipMode('none'));
+    $('btnFlipStep').addEventListener('click', () => setFlipMode('step'));
+    $('btnFlipRound').addEventListener('click', () => setFlipMode('round'));
+    $('btnFlipGcd').addEventListener('click', () => setFlipMode('gcd'));
+    $('btnFlipBalance').addEventListener('click', () => setFlipMode('balance'));
+    document.querySelectorAll('.size-btn').forEach(btn => btn.addEventListener('click', () => setBoxSize(parseInt(btn.getAttribute('data-size')))));
+
     nRange.addEventListener('input', e => {
       N = parseInt(e.target.value);
       if (K > N - 2) K = N - 2;
-      kRange.value = K;
       rebuild();
     });
     kRange.addEventListener('input', e => {
@@ -676,10 +780,11 @@
       const r = parseFloat(e.target.value);
       ballSizeVal.textContent = `${r.toFixed(1)} px`;
       updateBallRadius(r);
+      syncUrl();
     });
     scrubRange.addEventListener('input', e => {
       isPaused = true;
-      btnPlayPause.textContent = '▶ Lejátszás';
+      btnPlayPause.textContent = '▶ Play';
       btnPlayPause.classList.add('btn-active');
       globalT = parseFloat(e.target.value);
       renderFrame(globalT);
@@ -688,77 +793,71 @@
       overlapPercent = parseInt(e.target.value);
       overlapVal.textContent = `${overlapPercent}%`;
       renderFrame(globalT);
+      syncUrl();
     });
     speedRange.addEventListener('input', e => {
       speedMultiplier = parseFloat(e.target.value);
       speedVal.textContent = `${speedMultiplier.toFixed(1)}x`;
+      syncUrl();
     });
     depthRange.addEventListener('input', e => {
       depthIntensity = parseInt(e.target.value) / 100;
       depthVal.textContent = `${e.target.value}%`;
       renderFrame(globalT);
+      syncUrl();
     });
     btnPlayPause.addEventListener('click', () => {
       isPaused = !isPaused;
-      btnPlayPause.textContent = isPaused ? '▶ Lejátszás' : '⏸ Szünet';
+      btnPlayPause.textContent = isPaused ? '▶ Play' : '⏸ Pause';
       btnPlayPause.classList.toggle('btn-active', isPaused);
     });
-    function setDirectionMode(mode) {
+    function setDirectionMode(mode, sync = true) {
       modeDirection = mode;
       const off = 'py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition';
       const on = 'py-2 rounded-xl btn-active border border-slate-700 transition';
       btnDirCw.className = mode === 1 ? on : off;
       btnDirCcw.className = mode === -1 ? on : off;
       btnDirPingPong.className = mode === 'pingpong' ? on : off;
-      statusDirectionBadge.textContent = mode === 1 ? '↻ Óramutató' : mode === -1 ? '↺ Ellentétes' : '⇄ Ping-Pong';
+      statusDirectionBadge.textContent = mode === 1 ? '↻ Clockwise' : mode === -1 ? '↺ Counter-clockwise' : '⇄ Ping-pong';
+      if (sync) syncUrl();
     }
-    const BTN_OFF = 'flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition';
-    const BTN_ON = 'flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition';
-    function setOrderMode(mode) {
-      orderMode = mode;
-      $('btnOrderSame').className = 'order-btn ' + (mode === 'same' ? BTN_ON : BTN_OFF);
-      $('btnOrderOpp').className = 'order-btn ' + (mode === 'opposite' ? BTN_ON : BTN_OFF);
-      rebuild();
-    }
-    function setFlipMode(mode) {
-      flipMode = mode;
-      $('btnFlipNone').className = 'flip-btn ' + (mode === 'none' ? BTN_ON : BTN_OFF);
-      $('btnFlipStep').className = 'flip-btn ' + (mode === 'step' ? BTN_ON : BTN_OFF);
-      $('btnFlipRound').className = 'flip-btn ' + (mode === 'round' ? BTN_ON : BTN_OFF);
-      $('btnFlipGcd').className = 'flip-btn ' + (mode === 'gcd' ? BTN_ON : BTN_OFF);
-      $('btnFlipBalance').className = 'flip-btn ' + (mode === 'balance' ? BTN_ON : BTN_OFF);
-      rebuild();
-    }
-    $('btnOrderSame').addEventListener('click', () => setOrderMode('same'));
-    $('btnOrderOpp').addEventListener('click', () => setOrderMode('opposite'));
-    $('btnFlipNone').addEventListener('click', () => setFlipMode('none'));
-    $('btnFlipStep').addEventListener('click', () => setFlipMode('step'));
-    $('btnFlipRound').addEventListener('click', () => setFlipMode('round'));
-    $('btnFlipGcd').addEventListener('click', () => setFlipMode('gcd'));
-    $('btnFlipBalance').addEventListener('click', () => setFlipMode('balance'));
-
     btnDirCw.addEventListener('click', () => setDirectionMode(1));
     btnDirCcw.addEventListener('click', () => setDirectionMode(-1));
     btnDirPingPong.addEventListener('click', () => setDirectionMode('pingpong'));
     btnToggleLabels.addEventListener('click', () => {
       showLabels = !showLabels;
-      btnToggleLabels.textContent = showLabels ? 'Betűk: BE' : 'Betűk: KI';
-      btnToggleLabels.classList.toggle('text-slate-500', !showLabels);
+      refreshSimpleControls();
       renderFrame(globalT);
+      syncUrl();
     });
     btnToggleTrails.addEventListener('click', () => {
       showTrails = !showTrails;
-      trailsLayer.style.display = showTrails ? 'block' : 'none';
-      btnToggleTrails.textContent = showTrails ? 'Nyomvonalak: BE' : 'Nyomvonalak: KI';
-      btnToggleTrails.classList.toggle('text-slate-500', !showTrails);
+      refreshSimpleControls();
+      syncUrl();
     });
     btnReset.addEventListener('click', () => {
       globalT = 0;
       currentDirSign = 1;
       renderFrame(globalT);
     });
+    $('btnCopyLink').addEventListener('click', async () => {
+      syncUrl();
+      const btn = $('btnCopyLink');
+      try {
+        await navigator.clipboard.writeText(location.href);
+        btn.textContent = '✓ Copied';
+      } catch (e) {
+        btn.textContent = location.href; // fallback: show it so it can be copied by hand
+      }
+      setTimeout(() => { btn.textContent = '⧉ Copy link'; }, 1800);
+    });
+    // Browser back/forward or a hand-edited URL: re-read the state
+    window.addEventListener('popstate', () => { readUrl(); refreshModeButtons(); refreshSimpleControls(); rebuild(); });
 
-    // Indítás
+    // Start
+    readUrl();
+    refreshModeButtons();
+    refreshSimpleControls();
     rebuild();
     requestAnimationFrame(t => { lastStamp = t; requestAnimationFrame(animate); });
   </script>
