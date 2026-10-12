@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polygon Swap 3D Spinner – általános (N, K)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #0d1527 0%, #060a12 70%, #020408 100%);
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    input[type=range] { accent-color: #00D2FC; }
+    input[type=range]:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-active {
+      background: rgba(0, 210, 252, 0.22) !important;
+      color: #38bdf8 !important;
+      border-color: rgba(0, 210, 252, 0.55) !important;
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(0, 210, 252, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-200 flex flex-col justify-between p-3 sm:p-5 selection:bg-cyan-500 selection:text-black">
+
+  <header class="max-w-5xl mx-auto w-full flex items-center justify-between py-2 border-b border-slate-800">
+    <div class="flex items-center gap-2.5">
+      <div class="w-3 h-3 rounded-full bg-[#00D2FC] shadow-[0_0_10px_#00D2FC] animate-pulse"></div>
+      <h1 class="font-bold text-sm tracking-wider uppercase text-white flex items-center gap-2">
+        Polygon Swap Spinner
+        <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono lowercase">(<span class="nkLabel">5, 1</span>) · <span class="periodNum">30</span>-step loop</span>
+      </h1>
+    </div>
+    <div class="flex items-center gap-3 font-mono text-xs text-slate-400">
+      <span>Fázis: <strong id="headerStepDisplay" class="text-white">0.00 / 30</strong></span>
+      <span class="text-slate-600 hidden sm:inline">•</span>
+      <span id="activeSwapPairDisplay" class="text-cyan-400 font-semibold hidden sm:inline">1 ↔ 3</span>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto w-full my-auto grid grid-cols-1 lg:grid-cols-12 gap-5 py-4">
+
+    <!-- BAL OLDAL: Spinner -->
+    <div class="lg:col-span-6 flex flex-col items-center justify-between p-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl backdrop-blur-md shadow-2xl relative overflow-hidden min-h-[380px]">
+
+      <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 z-10">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          Periódus: <span class="text-slate-200"><span class="periodNum">30</span> swap</span>
+        </span>
+        <span id="statusDirectionBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">↻ Óramutató</span>
+      </div>
+
+      <div class="my-auto py-4 flex items-center justify-center">
+        <div id="spinnerWrapper" class="relative flex items-center justify-center w-36 h-36 transition-all duration-150">
+          <svg id="spinnerSvg" class="w-full h-full overflow-visible select-none" viewBox="-100 -100 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs id="svgDefs">
+              <radialGradient id="ball-shine" cx="28%" cy="26%" r="72%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+                <stop offset="42%" stop-color="#ffffff" stop-opacity="0.05" />
+                <stop offset="100%" stop-color="#000000" stop-opacity="0.6" />
+              </radialGradient>
+            </defs>
+            <g id="trailsLayer" class="opacity-25" style="display:none"></g>
+            <g id="dotsLayer"></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1 bg-slate-950/90 border border-slate-800 rounded-xl px-2.5 py-1 text-xs z-10">
+        <span class="text-slate-500 font-mono text-[10px] mr-1">DOBOZ:</span>
+        <button onclick="setBoxSize(36)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="36">36px</button>
+        <button onclick="setBoxSize(48)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="48">48px</button>
+        <button onclick="setBoxSize(80)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="80">80px</button>
+        <button onclick="setBoxSize(144)" class="size-btn px-2 py-0.5 rounded btn-active transition" data-size="144">144px</button>
+        <button onclick="setBoxSize(200)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="200">200px</button>
+      </div>
+    </div>
+
+    <!-- JOBB OLDAL: Vezérlőpult -->
+    <div class="lg:col-span-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl p-5 sm:p-6 flex flex-col justify-between gap-4 backdrop-blur-md">
+
+      <!-- 0. Geometria: N és K -->
+      <div class="bg-slate-950/60 p-3 rounded-2xl border border-cyan-900/60 space-y-2">
+        <div class="text-[11px] font-mono text-cyan-300 uppercase tracking-wider">Geometria (N-szög, K átugrás)</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-slate-300">N (CSÚCSOK)</span>
+              <span id="nVal" class="text-white font-bold">5</span>
+            </div>
+            <input id="nRange" type="range" min="3" max="20" step="1" value="5" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+          </div>
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-slate-300">K (ÁTUGROTT ELEMEK)</span>
+              <span id="kVal" class="text-white font-bold">1</span>
+            </div>
+            <input id="kRange" type="range" min="0" max="3" step="1" value="1" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-slate-500 font-mono text-[10px] mr-1 w-16">SORREND:</span>
+          <button id="btnOrderSame" class="order-btn flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition" title="A cserék sorrendje a felső golyó irányába halad: (1,1+K+1), (2,2+K+1), …">Egyező</button>
+          <button id="btnOrderOpp" class="order-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="A cserék sorrendje a felső golyóval ellentétesen halad: (1,…), (N,…), (N−1,…), …">Ellentétes</button>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-slate-500 font-mono text-[10px] mr-1 w-16">FENT/LENT:</span>
+          <button id="btnFlipNone" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Mindig az óramutató irányába haladó golyó van felül">Fix</button>
+          <button id="btnFlipStep" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Felül = óramutató irányú XOR (s mod 2): páros cserénél az első, páratlannál a második megy felül">XOR s</button>
+          <button id="btnFlipRound" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Felül = óramutató irányú XOR (⌊s/N⌋ mod 2): körönként fordul">XOR kör</button>
+          <button id="btnFlipGcd" class="flip-btn flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition" title="Felül = óramutató irányú XOR (⌊s/lnko(K+1,N)⌋ mod 2): ha N-ben több 2-es tényező van, mint K+1-ben, minden golyó szigorúan váltakozik">XOR lnko</button>
+          <button id="btnFlipBalance" class="flip-btn flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition" title="Golyónkénti egyenleg: fent +1, lent −1. A kisebb egyenlegű megy fel; egyenlőnél a kisebb sorszámú (A<B<…)">Egyenleg</button>
+        </div>
+        <div id="balanceLine" class="text-[10px] font-mono text-slate-400 hidden"></div>
+        <div id="geomInfo" class="text-[10px] font-mono text-slate-400 leading-relaxed"></div>
+      </div>
+
+      <!-- 1. Lejátszás & Irány -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Lejátszás & Irány</div>
+        <div class="grid grid-cols-4 gap-1.5 text-xs">
+          <button id="btnPlayPause" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono transition">⏸ Szünet</button>
+          <button id="btnDirCw" class="py-2 rounded-xl btn-active border border-slate-700 transition">↻ Előre</button>
+          <button id="btnDirCcw" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">↺ Vissza</button>
+          <button id="btnDirPingPong" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition" title="Oda-vissza">⇄ Ping-Pong</button>
+        </div>
+      </div>
+
+      <!-- 2. Scrubber -->
+      <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 space-y-1.5">
+        <div class="flex justify-between items-center text-xs font-mono">
+          <span class="text-cyan-300 font-medium">KÉZI TEKERŐ (0 – <span class="periodNum">30</span> LOOP)</span>
+          <span id="scrubValDisplay" class="text-white font-bold bg-slate-800 px-2 py-0.5 rounded">0.00 / 30</span>
+        </div>
+        <input id="scrubRange" type="range" min="0" max="30" step="0.02" value="0" class="w-full h-2 bg-slate-800 rounded cursor-pointer">
+        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+          <span>0 (Start)</span>
+          <span><span class="nNum">5</span> (1 kör)</span>
+          <span><span class="periodNum">30</span> (Teljes visszaérkezés)</span>
+        </div>
+      </div>
+
+      <!-- 3. Golyók mérete -->
+      <div class="space-y-1 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/80">
+        <div class="flex justify-between text-xs font-mono">
+          <span class="text-amber-300 font-medium">GOLYÓK MÉRETE</span>
+          <span id="ballSizeVal" class="text-white font-bold">8.5 px</span>
+        </div>
+        <input id="ballSizeRange" type="range" min="2.0" max="15.0" step="0.5" value="8.5" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer accent-amber-400">
+      </div>
+
+      <!-- 4. Átfedés -->
+      <div class="space-y-1">
+        <div class="flex justify-between text-xs font-mono">
+          <span class="text-slate-300">ÁTFEDÉS (OVERLAP: 0% – <span id="overlapMaxLabel">50</span>%)</span>
+          <span id="overlapVal" class="text-[#00D2FC] font-bold">50%</span>
+        </div>
+        <input id="overlapRange" type="range" min="0" max="50" step="1" value="50" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+        <div id="overlapHint" class="text-[10px] text-slate-500 font-mono"></div>
+      </div>
+
+      <!-- 5. Sebesség és mélység -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-slate-400">SEBESSÉG</span>
+            <span id="speedVal" class="text-emerald-400 font-semibold">1.0x</span>
+          </div>
+          <input id="speedRange" type="range" min="0.2" max="4.0" step="0.1" value="1.0" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+        </div>
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-slate-400">3D MÉLYSÉG</span>
+            <span id="depthVal" class="text-purple-400 font-semibold">100%</span>
+          </div>
+          <input id="depthRange" type="range" min="0" max="140" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+        </div>
+      </div>
+
+      <!-- 6. Kapcsolók -->
+      <div class="flex items-center gap-2 pt-1">
+        <button id="btnToggleLabels" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-500 border border-slate-700 font-mono text-xs transition">Betűk: KI</button>
+        <button id="btnToggleTrails" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-500 border border-slate-700 font-mono text-xs transition">Nyomvonalak: KI</button>
+        <button id="btnReset" class="px-3 py-1.5 rounded-lg bg-rose-950/40 text-rose-300 hover:bg-rose-900/50 border border-rose-800 font-mono text-xs transition">↺ Reset</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="max-w-5xl mx-auto w-full py-2.5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-800 gap-2">
+    <div id="legend" class="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start"></div>
+    <div class="font-mono text-[11px] text-slate-500 whitespace-nowrap">
+      <span class="nNum">5</span> csúcs • i ↔ i+<span class="kPlus1">2</span> • <span class="periodNum">30</span> swap zárt ciklus
+    </div>
+  </footer>
+
+  <script>
+    // =============================================================
+    // 1. PARAMÉTEREK ÉS GEOMETRIA
+    //    N: csúcsok száma (3–20)
+    //    K: hány elemet ugrik át a csere (0–N-2); az s-edik csere párja: (s, s+K+1) mod N
+    //    Az s-edik csere párja (u, u+K+1). SORREND mód: 'same' u = s, 'opposite' u = -s.
+    //    Alapesetben az u-ból induló (óramutató szerint haladó) golyó megy felül. Ezt a
+    //    FENT/LENT mód XOR-olja egy paritással:
+    //      'none'   nincs váltás (a szerep golyónként fix: aki felül volt, mindig felül marad,
+    //               mert a felső golyó pontosan K+1 lépéssel később kerül újra sorra)
+    //      'step'   flip = s mod 2
+    //      'round'  flip = ⌊s/N⌋ mod 2
+    //      'gcd'    flip = ⌊s/g⌋ mod 2, g = lnko(K+1, N)
+    //      'balance' golyónkénti egyenleg: fent +1, lent −1; a kisebb egyenlegű megy fel,
+    //               egyenlőnél a kisebb sorszámú. Itt az állapot (elrendezés + egyenlegek)
+    //               nem feltétlenül tér vissza a kiindulásba, ezért a loop a ciklus első
+    //               ismétlődő állapotából indul (PREPERIOD lépés után).
+    //    Egy felső golyó K+1, egy alsó N-K-1 lépésenként mozog, ezért a szigorú
+    //    fent-lent-fent váltakozás pontosan akkor érhető el, ha K+1-ben kevesebb 2-es tényező
+    //    van, mint N-ben (ekkor a 'gcd' mód ezt adja). Páratlan N-nél ez sosem teljesül.
+    // =============================================================
+    const RADIUS = 64;
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const BASE_PALETTE = [ // az eredeti 5 szín, N=5-nél ezt használjuk
+      { color: '#00D2FC', stops: ['#ffffff', '#72f2ff', '#00D2FC', '#005063'], name: 'Világoskék' },
+      { color: '#3E1B93', stops: ['#beb0ff', '#6a42e0', '#3E1B93', '#120436'], name: 'Indigó' },
+      { color: '#D1125A', stops: ['#ffa1c3', '#f22c7a', '#D1125A', '#4d001b'], name: 'Magenta' },
+      { color: '#FF9F1C', stops: ['#fff1bc', '#ffb648', '#FF9F1C', '#6b3a00'], name: 'Arany' },
+      { color: '#005030', stops: ['#4fd997', '#0f7a4e', '#005030', '#001a0e'], name: 'Sötétzöld' }
+    ];
+
+    let N = 5;
+    let K = 1;
+    let orderMode = 'same';      // 'same' | 'opposite'
+    let flipMode = 'balance';    // 'none' | 'step' | 'round' | 'gcd' | 'balance'
+    let PREPERIOD = 0;           // hány csere után kezdődik a loop (csak 'balance' módban lehet > 0)
+    let balSeq = [];             // balSeq[s][ball] = egyenleg a loop s-edik cseréje ELŐTT
+    let swapSeq = [];            // swapSeq[s] = [u, v] az s-edik cseréhez (s < PERIOD)
+    let flipSeq = [];            // flipSeq[s] = true, ha az s-edik cserében a második tag megy felül
+    let jMinGlobal = 1;
+    let roleMix = { mixed: 0, rate: 0, patterns: [] };
+    let VERTICES = [];
+    let SWAPS = [];
+    let BALL_DEFS = [];
+    let PERIOD = 1;
+    let MAX_OVERLAP = 50;   // százalék
+    let ballPosAfterStep = [];
+
+    function buildGeometry() {
+      VERTICES = [];
+      for (let i = 0; i < N; i++) {
+        const angle = -Math.PI / 2 + (i * 2 * Math.PI / N); // SVG y lefelé → növekvő i = óramutató
+        VERTICES.push({ x: RADIUS * Math.cos(angle), y: RADIUS * Math.sin(angle) });
+      }
+      SWAPS = [];
+      for (let i = 0; i < N; i++) SWAPS.push([i, (i + K + 1) % N]);
+
+      // Színek: N=5-nél az eredeti paletta, egyébként egyenletes színkör
+      BALL_DEFS = [];
+      for (let i = 0; i < N; i++) {
+        let def;
+        if (N === 5) {
+          def = BASE_PALETTE[i];
+        } else {
+          const h = Math.round((200 + i * 360 / N) % 360);
+          def = {
+            color: `hsl(${h} 85% 50%)`,
+            stops: [`hsl(${h} 100% 96%)`, `hsl(${h} 90% 68%)`, `hsl(${h} 85% 48%)`, `hsl(${h} 80% 14%)`],
+            name: `hue ${h}°`
+          };
+        }
+        BALL_DEFS.push({ id: LETTERS[i], fill: `url(#grad-${i})`, ...def });
+      }
+    }
+
+    // =============================================================
+    // 2. CSERE-SORREND, RÉTEG-VÁLTÁS ÉS PERIÓDUS
+    // =============================================================
+    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+
+    function pairAt(s) {
+      const i = ((s % N) + N) % N;
+      const u = orderMode === 'same' ? i : (N - i) % N;
+      return [u, (u + K + 1) % N];
+    }
+    function flipAt(s) {
+      if (flipMode === 'step') return (s % 2) === 1;
+      if (flipMode === 'round') return (Math.floor(s / N) % 2) === 1;
+      if (flipMode === 'gcd') return (Math.floor(s / gcd(K + 1, N)) % 2) === 1;
+      return false;
+    }
+    // A menetrend (pár + flip) ismétlődési hossza: N legkisebb többszöröse, amire a flip is ismétlődik
+    function scheduleLength() {
+      let L = N;
+      while (true) {
+        let ok = true;
+        for (let t = 0; t < 4 * N; t++) if (flipAt(t) !== flipAt(t + L)) { ok = false; break; }
+        if (ok) return L;
+        L += N;
+      }
+    }
+
+    // Legkisebb j, amelyre az s és s+j csere közös csúcson osztozik. Egy csere legfeljebb
+    // jMin lépésig tarthat, hogy soha ne mozogjon egy golyó két cserében egyszerre.
+    function computeJMin() {
+      let jMin = N;
+      for (let s = 0; s < N; s++) {
+        const [a, b] = pairAt(s);
+        for (let j = 1; j < jMin; j++) {
+          const [c, d] = pairAt(s + j);
+          if (a === c || a === d || b === c || b === d) { jMin = j; break; }
+        }
+      }
+      return jMin;
+    }
+
+    function buildPeriod() {
+      jMinGlobal = computeJMin();
+      MAX_OVERLAP = Math.floor(100 * (1 - 1 / jMinGlobal));
+
+      // Szimuláció az első ismétlődő teljes állapotig. Állapot = (menetrend fázisa, elrendezés,
+      // egyenlegek). Paritásos módokban az elrendezés-dinamika bijekció, ezért az első ismétlődés
+      // maga a kiindulási állapot (PREPERIOD = 0). 'balance' módban lehet előperiódus.
+      const isBalance = flipMode === 'balance';
+      const L = isBalance ? N : scheduleLength();
+      const layout = Array.from({ length: N }, (_, i) => i);
+      const bal = new Array(N).fill(0);
+      const posHist = [], pairHist = [], flipHist = [], balHist = [];
+      const seen = new Map();
+      let s = 0, pre, per;
+      while (true) {
+        const key = (s % L) + '|' + layout.join(',') + '|' + bal.join(',');
+        if (seen.has(key)) { pre = seen.get(key); per = s - pre; break; }
+        seen.set(key, s);
+        posHist.push(layout.slice()); balHist.push(bal.slice());
+        const [u, v] = pairAt(s);
+        const a = layout[u], b = layout[v];
+        let f;
+        if (isBalance) f = !(bal[a] < bal[b] || (bal[a] === bal[b] && a < b)); // f=true: a v-beli (b) megy felül
+        else f = flipAt(s);
+        const top = f ? b : a, bot = f ? a : b;
+        if (isBalance) { bal[top] += 1; bal[bot] -= 1; }
+        pairHist.push([u, v]); flipHist.push(f);
+        [layout[u], layout[v]] = [layout[v], layout[u]];
+        s++;
+        if (s > 300000) throw new Error('A csere-sorozat nem zárul be');
+      }
+      PERIOD = per; PREPERIOD = pre;
+      swapSeq = pairHist.slice(pre, pre + per);
+      flipSeq = flipHist.slice(pre, pre + per);
+      balSeq = balHist.slice(pre, pre + per);
+      ballPosAfterStep = Array.from({ length: N }, () => []);
+      for (let t = 0; t <= per; t++) {
+        const lay = posHist[pre + (t % per)];
+        for (let v = 0; v < N; v++) ballPosAfterStep[lay[v]][t] = v;
+      }
+
+      // Statisztika a megfigyeléshez (a loop szakaszán)
+      const patterns = Array.from({ length: N }, () => []);
+      for (let t = 0; t < per; t++) {
+        const lay = posHist[pre + t], [u, v] = swapSeq[t], f = flipSeq[t];
+        patterns[f ? lay[v] : lay[u]].push('F'); patterns[f ? lay[u] : lay[v]].push('L');
+      }
+      let flips = 0, moves = 0;
+      patterns.forEach(pt => { moves += pt.length; for (let i = 0; i < pt.length; i++) if (pt[i] !== pt[(i - 1 + pt.length) % pt.length]) flips++; });
+      roleMix = {
+        mixed: patterns.filter(pt => pt.includes('F') && pt.includes('L')).length,
+        rate: moves ? flips / moves : 0,
+        patterns
+      };
+    }
+
+    function swapAt(s) { return swapSeq[((s % PERIOD) + PERIOD) % PERIOD]; }
+    function flipOf(s) { return flipSeq[((s % PERIOD) + PERIOD) % PERIOD]; }
+
+    function getBallVertexAtBoundary(ballIdx, integerStep) {
+      const modS = ((integerStep % PERIOD) + PERIOD) % PERIOD;
+      return ballPosAfterStep[ballIdx][modS];
+    }
+
+    // =============================================================
+    // 3. FOLYTONOS 3D POZÍCIÓ
+    // =============================================================
+    function smoothEase(t) { return 0.5 - 0.5 * Math.cos(Math.PI * t); }
+
+    function calculateBallState(ballIdx, t, overlapRatio, depthFactor) {
+      const duration = 1.0 / (1.0 - overlapRatio); // csere hossza lépésegységben
+      const floorT = Math.floor(t);
+      const earliest = floorT - Math.ceil(duration);
+
+      for (let s = earliest; s <= floorT + 1; s++) {
+        const startVertex = getBallVertexAtBoundary(ballIdx, s);
+        const endVertex = getBallVertexAtBoundary(ballIdx, s + 1);
+        if (startVertex === endVertex) continue; // ebben a cserében nem mozog
+
+        const dt = t - s;
+        if (dt < 0 || dt > duration) continue;
+
+        const progress = Math.min(1.0, dt / duration);
+        const eased = smoothEase(progress);
+        const zArc = Math.sin(progress * Math.PI);
+        const p0 = VERTICES[startVertex];
+        const p1 = VERTICES[endVertex];
+        const x = p0.x + (p1.x - p0.x) * eased;
+        const y = p0.y + (p1.y - p0.y) * eased;
+
+        const isForward = (startVertex === swapAt(s)[0]) !== flipOf(s); // óramutató irányú XOR réteg-váltás → felül
+
+        if (isForward) {
+          return {
+            x, y,
+            scale: 1.0 + (0.52 * zArc * depthFactor),
+            brightness: 1.0 + (0.42 * zArc * depthFactor),
+            opacity: 1.0,
+            z: 100 + (zArc * 160)
+          };
+        }
+        return {
+          x, y,
+          scale: Math.max(0.42, 1.0 - (0.48 * zArc * depthFactor)),
+          brightness: Math.max(0.38, 1.0 - (0.62 * zArc * depthFactor)),
+          opacity: Math.max(0.55, 1.0 - (0.38 * zArc * depthFactor)),
+          z: 100 - (zArc * 160)
+        };
+      }
+
+      const pos = VERTICES[getBallVertexAtBoundary(ballIdx, floorT)];
+      return { x: pos.x, y: pos.y, scale: 1.0, brightness: 1.0, opacity: 1.0, z: 100 };
+    }
+
+    // =============================================================
+    // 4. SVG ELEMEK (újraépítés minden N/K váltásnál)
+    // =============================================================
+    const svgDefs = document.getElementById('svgDefs');
+    const dotsLayer = document.getElementById('dotsLayer');
+    const trailsLayer = document.getElementById('trailsLayer');
+    const legend = document.getElementById('legend');
+    let ballNodes = [];
+    let currentBaseRadius = 8.5;
+
+    function buildSvg() {
+      // Gradiensek
+      svgDefs.querySelectorAll('radialGradient[id^="grad-"]').forEach(g => g.remove());
+      BALL_DEFS.forEach((d, i) => {
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+        grad.setAttribute('id', `grad-${i}`);
+        grad.setAttribute('cx', '32%'); grad.setAttribute('cy', '28%'); grad.setAttribute('r', '68%');
+        [['0%', d.stops[0]], ['32%', d.stops[1]], ['68%', d.stops[2]], ['100%', d.stops[3]]].forEach(([off, col]) => {
+          const st = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+          st.setAttribute('offset', off); st.setAttribute('stop-color', col);
+          grad.appendChild(st);
+        });
+        svgDefs.appendChild(grad);
+      });
+
+      // Nyomvonalak
+      trailsLayer.innerHTML = '';
+      SWAPS.forEach(([u, v]) => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', VERTICES[u].x); line.setAttribute('y1', VERTICES[u].y);
+        line.setAttribute('x2', VERTICES[v].x); line.setAttribute('y2', VERTICES[v].y);
+        line.setAttribute('stroke', '#38bdf8'); line.setAttribute('stroke-width', '1.2');
+        line.setAttribute('stroke-dasharray', '3 3');
+        trailsLayer.appendChild(line);
+      });
+
+      // Golyók
+      dotsLayer.innerHTML = '';
+      ballNodes = [];
+      BALL_DEFS.forEach((bDef, i) => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('id', `ball-${bDef.id}`);
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('fill', bDef.fill);
+        const shine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        shine.setAttribute('fill', 'url(#ball-shine)');
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('font-family', 'JetBrains Mono, monospace');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#ffffff');
+        text.setAttribute('pointer-events', 'none');
+        text.textContent = bDef.id;
+        g.appendChild(circle); g.appendChild(shine); g.appendChild(text);
+        dotsLayer.appendChild(g);
+        ballNodes.push({ g, circle, shine, text, ballIdx: i });
+      });
+      updateBallRadius(currentBaseRadius);
+
+      // Jelmagyarázat
+      legend.innerHTML = '';
+      BALL_DEFS.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-1';
+        item.innerHTML = `<span class="w-2.5 h-2.5 rounded-full" style="background:${d.color};box-shadow:0 0 6px ${d.color}"></span><span class="font-mono text-slate-300 text-[10px]">${d.id}</span>`;
+        legend.appendChild(item);
+      });
+    }
+
+    // =============================================================
+    // 5. VEZÉRLÉS
+    // =============================================================
+    let overlapPercent = 50;
+    let speedMultiplier = 1.0;
+    let depthIntensity = 1.0;
+    let modeDirection = 1; // 1: CW, -1: CCW, 'pingpong'
+    let currentDirSign = 1;
+    let isPaused = false;
+    let showLabels = false;
+    let showTrails = false;
+    let globalT = 0.0;
+    let lastStamp = performance.now();
+
+    const $ = id => document.getElementById(id);
+    const spinnerWrapper = $('spinnerWrapper');
+    const headerStepDisplay = $('headerStepDisplay');
+    const activeSwapPairDisplay = $('activeSwapPairDisplay');
+    const scrubRange = $('scrubRange');
+    const scrubValDisplay = $('scrubValDisplay');
+    const ballSizeRange = $('ballSizeRange');
+    const ballSizeVal = $('ballSizeVal');
+    const overlapRange = $('overlapRange');
+    const overlapVal = $('overlapVal');
+    const overlapMaxLabel = $('overlapMaxLabel');
+    const overlapHint = $('overlapHint');
+    const speedRange = $('speedRange');
+    const speedVal = $('speedVal');
+    const depthRange = $('depthRange');
+    const depthVal = $('depthVal');
+    const nRange = $('nRange');
+    const nVal = $('nVal');
+    const kRange = $('kRange');
+    const kVal = $('kVal');
+    const geomInfo = $('geomInfo');
+    const btnPlayPause = $('btnPlayPause');
+    const btnDirCw = $('btnDirCw');
+    const btnDirCcw = $('btnDirCcw');
+    const btnDirPingPong = $('btnDirPingPong');
+    const btnToggleLabels = $('btnToggleLabels');
+    const btnToggleTrails = $('btnToggleTrails');
+    const btnReset = $('btnReset');
+    const statusDirectionBadge = $('statusDirectionBadge');
+
+    function updateBallRadius(newR) {
+      currentBaseRadius = newR;
+      ballNodes.forEach(({ circle, shine, text }) => {
+        circle.setAttribute('r', newR.toString());
+        shine.setAttribute('r', newR.toString());
+        text.setAttribute('font-size', Math.max(5, newR * 0.95).toFixed(1));
+      });
+    }
+
+    // Teljes újraépítés N vagy K változásakor
+    function rebuild() {
+      buildGeometry();
+      buildPeriod();
+      buildSvg();
+
+      // K csúszka tartománya N-hez igazodik (K = N-1 önmagával cserélne, ezért N-2 a max)
+      kRange.max = N - 2;
+      kVal.textContent = K;
+      nVal.textContent = N;
+
+      // Átfedés korlátozása
+      overlapRange.max = MAX_OVERLAP;
+      overlapRange.disabled = (MAX_OVERLAP === 0);
+      if (overlapPercent > MAX_OVERLAP) overlapPercent = MAX_OVERLAP;
+      overlapRange.value = overlapPercent;
+      overlapVal.textContent = `${overlapPercent}%`;
+      overlapMaxLabel.textContent = MAX_OVERLAP;
+      overlapHint.textContent = MAX_OVERLAP === 0
+        ? 'Egymás utáni cserék közös csúcson osztoznak → nincs átfedés'
+        : `Az s és s+${jMinGlobal} csere oszt közös csúcsot → egy csere legfeljebb ${jMinGlobal} lépésig tarthat → max ${MAX_OVERLAP}%`;
+
+      // Feliratok
+      document.querySelectorAll('.periodNum').forEach(el => el.textContent = PERIOD);
+      document.querySelectorAll('.nNum').forEach(el => el.textContent = N);
+      document.querySelectorAll('.kPlus1').forEach(el => el.textContent = K + 1);
+      document.querySelectorAll('.nkLabel').forEach(el => el.textContent = `${N}, ${K}`);
+      scrubRange.max = PERIOD;
+
+      const g = gcd(K + 1, N);
+      const v2 = x => { let c = 0; while (x % 2 === 0) { x /= 2; c++; } return c; };
+      const strictPossible = v2(K + 1) < v2(N);
+      const roleTxt = roleMix.mixed === 0
+        ? `<span class="text-amber-300">${roleMix.patterns.filter(pt => pt[0] === 'F').length} golyó mindig fent, ${roleMix.patterns.filter(pt => pt[0] === 'L').length} mindig lent</span>`
+        : `<span class="text-emerald-300">${roleMix.mixed}/${N} golyó jár fent is, lent is</span>, váltási arány ${(roleMix.rate * 100).toFixed(0)}%${roleMix.rate === 1 ? ' (szigorú F-L-F-L)' : ''}`;
+      const preTxt = PREPERIOD > 0
+        ? `<br><span class="text-amber-300">Előperiódus: ${PREPERIOD} csere</span> – a loop a ${PREPERIOD}. csere utáni állapotból indul, kezdő elrendezés: ${Array.from({ length: N }, (_, v) => LETTERS[ballPosAfterStep.findIndex(arr => arr[0] === v)]).join('')}`
+        : '';
+      $('balanceLine').classList.toggle('hidden', flipMode !== 'balance');
+      geomInfo.innerHTML =
+        `Cserék: ` + swapSeq.slice(0, Math.min(PERIOD, 7)).map(([u, v], i) => flipSeq[i] ? `<u>${u + 1}-${v + 1}</u>` : `${u + 1}-${v + 1}`).join(', ') + (PERIOD > 7 ? ', …' : '') +
+        ` <span class="text-slate-600">(aláhúzva: a második tag megy felül)</span>` +
+        `<br>Periódus: <b class="text-white">${PERIOD}</b> swap (${PERIOD / N} kör) · ${roleTxt}` +
+        `<br>lnko(K+1,N)=${g} · N/lnko=${N / g} ${N / g % 2 === 0 ? 'páros' : 'páratlan'} · szigorú paritásos váltakozás ${strictPossible ? 'lehetséges (XOR lnko)' : 'nem lehetséges'}` + preTxt;
+
+      globalT = 0;
+      currentDirSign = 1;
+      renderFrame(globalT);
+    }
+
+    function renderFrame(timeVal) {
+      const overlapRatio = overlapPercent / 100.0;
+      const states = [];
+      for (let i = 0; i < N; i++) states.push({ idx: i, state: calculateBallState(i, timeVal, overlapRatio, depthIntensity) });
+
+      states.sort((a, b) => a.state.z - b.state.z); // közelebbi golyó a DOM-ban hátrébb = felül
+
+      states.forEach(({ idx, state }) => {
+        const node = ballNodes[idx];
+        dotsLayer.appendChild(node.g);
+        node.g.setAttribute('transform', `translate(${state.x.toFixed(2)}, ${state.y.toFixed(2)}) scale(${state.scale.toFixed(3)})`);
+        node.g.setAttribute('opacity', state.opacity.toFixed(2));
+        node.g.style.filter = state.z > 125
+          ? `brightness(${state.brightness.toFixed(2)}) drop-shadow(0 6px 9px rgba(0,0,0,0.85))`
+          : `brightness(${state.brightness.toFixed(2)})`;
+        node.text.style.display = showLabels ? 'block' : 'none';
+      });
+
+      const normalizedT = ((timeVal % PERIOD) + PERIOD) % PERIOD;
+      headerStepDisplay.textContent = `${normalizedT.toFixed(2)} / ${PERIOD}`;
+      scrubValDisplay.textContent = `${normalizedT.toFixed(2)} / ${PERIOD}`;
+      scrubRange.value = normalizedT.toFixed(2);
+      const stepIdx = Math.floor(normalizedT);
+      const activeSwap = swapAt(stepIdx);
+      const topFrom = flipOf(stepIdx) ? activeSwap[1] : activeSwap[0];
+      activeSwapPairDisplay.textContent = `#${stepIdx}: ${activeSwap[0] + 1} ↔ ${activeSwap[1] + 1} (felül a ${topFrom + 1}-ről induló)`;
+      if (flipMode === 'balance') {
+        const bal = balSeq[stepIdx];
+        $('balanceLine').innerHTML = 'Egyenleg: ' + bal.map((b, i) => `<b style="color:${BALL_DEFS[i].color}">${LETTERS[i]}</b>${b > 0 ? '+' : ''}${b}`).join(' ');
+      }
+    }
+
+    function animate(currentTime) {
+      const deltaMs = Math.min(60, currentTime - lastStamp);
+      lastStamp = currentTime;
+      if (!isPaused) {
+        const stepRate = (deltaMs / 380) * speedMultiplier;
+        if (modeDirection === 'pingpong') {
+          globalT += stepRate * currentDirSign;
+          if (globalT >= PERIOD) { globalT = PERIOD; currentDirSign = -1; }
+          else if (globalT <= 0) { globalT = 0; currentDirSign = 1; }
+        } else {
+          globalT += stepRate * modeDirection;
+          globalT = ((globalT % PERIOD) + PERIOD) % PERIOD; // ne nőjön a végtelenbe
+        }
+        renderFrame(globalT);
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function setBoxSize(px) {
+      spinnerWrapper.style.width = px + 'px';
+      spinnerWrapper.style.height = px + 'px';
+      document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.className = parseInt(btn.getAttribute('data-size')) === px
+          ? 'size-btn px-2 py-0.5 rounded btn-active transition'
+          : 'size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition';
+      });
+    }
+
+    // --- Eseménykezelők ---
+    nRange.addEventListener('input', e => {
+      N = parseInt(e.target.value);
+      if (K > N - 2) K = N - 2;
+      kRange.value = K;
+      rebuild();
+    });
+    kRange.addEventListener('input', e => {
+      K = parseInt(e.target.value);
+      rebuild();
+    });
+    ballSizeRange.addEventListener('input', e => {
+      const r = parseFloat(e.target.value);
+      ballSizeVal.textContent = `${r.toFixed(1)} px`;
+      updateBallRadius(r);
+    });
+    scrubRange.addEventListener('input', e => {
+      isPaused = true;
+      btnPlayPause.textContent = '▶ Lejátszás';
+      btnPlayPause.classList.add('btn-active');
+      globalT = parseFloat(e.target.value);
+      renderFrame(globalT);
+    });
+    overlapRange.addEventListener('input', e => {
+      overlapPercent = parseInt(e.target.value);
+      overlapVal.textContent = `${overlapPercent}%`;
+      renderFrame(globalT);
+    });
+    speedRange.addEventListener('input', e => {
+      speedMultiplier = parseFloat(e.target.value);
+      speedVal.textContent = `${speedMultiplier.toFixed(1)}x`;
+    });
+    depthRange.addEventListener('input', e => {
+      depthIntensity = parseInt(e.target.value) / 100;
+      depthVal.textContent = `${e.target.value}%`;
+      renderFrame(globalT);
+    });
+    btnPlayPause.addEventListener('click', () => {
+      isPaused = !isPaused;
+      btnPlayPause.textContent = isPaused ? '▶ Lejátszás' : '⏸ Szünet';
+      btnPlayPause.classList.toggle('btn-active', isPaused);
+    });
+    function setDirectionMode(mode) {
+      modeDirection = mode;
+      const off = 'py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition';
+      const on = 'py-2 rounded-xl btn-active border border-slate-700 transition';
+      btnDirCw.className = mode === 1 ? on : off;
+      btnDirCcw.className = mode === -1 ? on : off;
+      btnDirPingPong.className = mode === 'pingpong' ? on : off;
+      statusDirectionBadge.textContent = mode === 1 ? '↻ Óramutató' : mode === -1 ? '↺ Ellentétes' : '⇄ Ping-Pong';
+    }
+    const BTN_OFF = 'flex-1 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 font-mono transition';
+    const BTN_ON = 'flex-1 py-1 rounded-lg btn-active border border-slate-700 font-mono transition';
+    function setOrderMode(mode) {
+      orderMode = mode;
+      $('btnOrderSame').className = 'order-btn ' + (mode === 'same' ? BTN_ON : BTN_OFF);
+      $('btnOrderOpp').className = 'order-btn ' + (mode === 'opposite' ? BTN_ON : BTN_OFF);
+      rebuild();
+    }
+    function setFlipMode(mode) {
+      flipMode = mode;
+      $('btnFlipNone').className = 'flip-btn ' + (mode === 'none' ? BTN_ON : BTN_OFF);
+      $('btnFlipStep').className = 'flip-btn ' + (mode === 'step' ? BTN_ON : BTN_OFF);
+      $('btnFlipRound').className = 'flip-btn ' + (mode === 'round' ? BTN_ON : BTN_OFF);
+      $('btnFlipGcd').className = 'flip-btn ' + (mode === 'gcd' ? BTN_ON : BTN_OFF);
+      $('btnFlipBalance').className = 'flip-btn ' + (mode === 'balance' ? BTN_ON : BTN_OFF);
+      rebuild();
+    }
+    $('btnOrderSame').addEventListener('click', () => setOrderMode('same'));
+    $('btnOrderOpp').addEventListener('click', () => setOrderMode('opposite'));
+    $('btnFlipNone').addEventListener('click', () => setFlipMode('none'));
+    $('btnFlipStep').addEventListener('click', () => setFlipMode('step'));
+    $('btnFlipRound').addEventListener('click', () => setFlipMode('round'));
+    $('btnFlipGcd').addEventListener('click', () => setFlipMode('gcd'));
+    $('btnFlipBalance').addEventListener('click', () => setFlipMode('balance'));
+
+    btnDirCw.addEventListener('click', () => setDirectionMode(1));
+    btnDirCcw.addEventListener('click', () => setDirectionMode(-1));
+    btnDirPingPong.addEventListener('click', () => setDirectionMode('pingpong'));
+    btnToggleLabels.addEventListener('click', () => {
+      showLabels = !showLabels;
+      btnToggleLabels.textContent = showLabels ? 'Betűk: BE' : 'Betűk: KI';
+      btnToggleLabels.classList.toggle('text-slate-500', !showLabels);
+      renderFrame(globalT);
+    });
+    btnToggleTrails.addEventListener('click', () => {
+      showTrails = !showTrails;
+      trailsLayer.style.display = showTrails ? 'block' : 'none';
+      btnToggleTrails.textContent = showTrails ? 'Nyomvonalak: BE' : 'Nyomvonalak: KI';
+      btnToggleTrails.classList.toggle('text-slate-500', !showTrails);
+    });
+    btnReset.addEventListener('click', () => {
+      globalT = 0;
+      currentDirSign = 1;
+      renderFrame(globalT);
+    });
+
+    // Indítás
+    rebuild();
+    requestAnimationFrame(t => { lastStamp = t; requestAnimationFrame(animate); });
+  </script>
+</body>
+</html>

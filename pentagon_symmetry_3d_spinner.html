@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pentagon Symmetry 3D Spinner - Seamless 30-Step Loop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #0d1527 0%, #060a12 70%, #020408 100%);
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    input[type=range] {
+      accent-color: #00D2FC;
+    }
+    .btn-active {
+      background: rgba(0, 210, 252, 0.22) !important;
+      color: #38bdf8 !important;
+      border-color: rgba(0, 210, 252, 0.55) !important;
+      font-weight: 600;
+      box-shadow: 0 0 16px rgba(0, 210, 252, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-200 flex flex-col justify-between p-3 sm:p-5 selection:bg-cyan-500 selection:text-black">
+
+  <header class="max-w-4xl mx-auto w-full flex items-center justify-between py-2 border-b border-slate-800">
+    <div class="flex items-center gap-2.5">
+      <div class="w-3 h-3 rounded-full bg-[#00D2FC] shadow-[0_0_10px_#00D2FC] animate-pulse"></div>
+      <div>
+        <h1 class="font-bold text-sm tracking-wider uppercase text-white flex items-center gap-2">
+          3D Pentagon Spinner
+          <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono lowercase"><span class="periodNum">30</span>-step loop</span>
+        </h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 font-mono text-xs text-slate-400">
+      <span>Fázis: <strong id="headerStepDisplay" class="text-white">0.00 / 30</strong></span>
+      <span class="text-slate-600 hidden sm:inline">•</span>
+      <span id="activeSwapPairDisplay" class="text-cyan-400 font-semibold hidden sm:inline">1 ↔ 3</span>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto w-full my-auto grid grid-cols-1 lg:grid-cols-12 gap-5 py-4">
+
+    <!-- BAL OLDAL: Spinner Megjelenítő Kártya -->
+    <div class="lg:col-span-6 flex flex-col items-center justify-between p-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl backdrop-blur-md shadow-2xl relative overflow-hidden min-h-[380px]">
+      
+      <!-- Felső státusz info a kártyán -->
+      <div class="w-full flex items-center justify-between text-xs font-mono text-slate-400 z-10">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          Periódus: <span class="text-slate-200">Pontosan <span class="periodNum">30</span> swap</span>
+        </span>
+        <span id="statusDirectionBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">↻ Óramutató</span>
+      </div>
+
+      <!-- KÖZÉP: Spinner konténer -->
+      <div class="my-auto py-4 flex items-center justify-center">
+        <div id="spinnerWrapper" class="relative flex items-center justify-center w-36 h-36 transition-all duration-150">
+          <svg id="spinnerSvg" class="w-full h-full overflow-visible select-none" viewBox="-100 -100 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- 1. Világoskék (#00D2FC) -->
+              <radialGradient id="grad-A" cx="32%" cy="28%" r="68%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+                <stop offset="30%" stop-color="#72f2ff" />
+                <stop offset="65%" stop-color="#00D2FC" />
+                <stop offset="100%" stop-color="#005063" />
+              </radialGradient>
+
+              <!-- 2. Indigó (#3E1B93) -->
+              <radialGradient id="grad-B" cx="32%" cy="28%" r="68%">
+                <stop offset="0%" stop-color="#beb0ff" />
+                <stop offset="35%" stop-color="#6a42e0" />
+                <stop offset="70%" stop-color="#3E1B93" />
+                <stop offset="100%" stop-color="#120436" />
+              </radialGradient>
+
+              <!-- 3. Berry Magenta (#D1125A) -->
+              <radialGradient id="grad-C" cx="32%" cy="28%" r="68%">
+                <stop offset="0%" stop-color="#ffa1c3" />
+                <stop offset="35%" stop-color="#f22c7a" />
+                <stop offset="70%" stop-color="#D1125A" />
+                <stop offset="100%" stop-color="#4d001b" />
+              </radialGradient>
+
+              <!-- 4. Lambo Gold (#FF9F1C) -->
+              <radialGradient id="grad-D" cx="32%" cy="28%" r="68%">
+                <stop offset="0%" stop-color="#fff1bc" />
+                <stop offset="35%" stop-color="#ffb648" />
+                <stop offset="70%" stop-color="#FF9F1C" />
+                <stop offset="100%" stop-color="#6b3a00" />
+              </radialGradient>
+
+              <!-- 5. Sötétzöld / Mély smaragd (#005030) -->
+              <radialGradient id="grad-E" cx="32%" cy="28%" r="68%">
+                <stop offset="0%" stop-color="#4fd997" />
+                <stop offset="35%" stop-color="#0f7a4e" />
+                <stop offset="70%" stop-color="#005030" />
+                <stop offset="100%" stop-color="#001a0e" />
+              </radialGradient>
+
+              <!-- Gömbcsillogás fedőréteg -->
+              <radialGradient id="ball-shine" cx="28%" cy="26%" r="72%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+                <stop offset="42%" stop-color="#ffffff" stop-opacity="0.05" />
+                <stop offset="100%" stop-color="#000000" stop-opacity="0.6" />
+              </radialGradient>
+            </defs>
+
+            <!-- Csillag pályavonalak -->
+            <g id="trailsLayer" class="opacity-25"></g>
+
+            <!-- Z-mélység szerint dinamikusan átrendezett golyók rétege -->
+            <g id="dotsLayer"></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Spinner UI méretező gombok -->
+      <div class="flex items-center gap-1 bg-slate-950/90 border border-slate-800 rounded-xl px-2.5 py-1 text-xs z-10">
+        <span class="text-slate-500 font-mono text-[10px] mr-1">DOBOZ:</span>
+        <button onclick="setBoxSize(36)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="36">36px</button>
+        <button onclick="setBoxSize(48)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="48">48px</button>
+        <button onclick="setBoxSize(80)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="80">80px</button>
+        <button onclick="setBoxSize(144)" class="size-btn px-2 py-0.5 rounded btn-active transition" data-size="144">144px</button>
+        <button onclick="setBoxSize(200)" class="size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition" data-size="200">200px</button>
+      </div>
+    </div>
+
+    <!-- JOBB OLDAL: Kísérletező Vezérlőpult -->
+    <div class="lg:col-span-6 bg-slate-900/60 border border-slate-800/80 rounded-3xl p-5 sm:p-6 flex flex-col justify-between gap-4 backdrop-blur-md">
+      
+      <!-- 1. Lejátszás & Irányítás -->
+      <div class="space-y-1.5">
+        <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Lejátszás & Irány</div>
+        <div class="grid grid-cols-4 gap-1.5 text-xs">
+          <button id="btnPlayPause" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono transition">
+            ⏸ Szünet
+          </button>
+          <button id="btnDirCw" class="py-2 rounded-xl btn-active border border-slate-700 transition">
+            ↻ Előre
+          </button>
+          <button id="btnDirCcw" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">
+            ↺ Vissza
+          </button>
+          <button id="btnDirPingPong" class="py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition" title="Oda-vissza">
+            ⇄ Ping-Pong
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Scrubber kézi tekerő (0 - PERIOD lépés, zökkenőmentes periódus) -->
+      <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800 space-y-1.5">
+        <div class="flex justify-between items-center text-xs font-mono">
+          <span class="text-cyan-300 font-medium">KÉZI TEKERŐ (0.00 – <span class="periodNum">30</span>.00 LOOP)</span>
+          <span id="scrubValDisplay" class="text-white font-bold bg-slate-800 px-2 py-0.5 rounded">0.00 / 30</span>
+        </div>
+        <input id="scrubRange" type="range" min="0" max="30" step="0.02" value="0" class="w-full h-2 bg-slate-800 rounded cursor-pointer">
+        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+          <span>0 (Start)</span>
+          <span>5 (1 kör: BAECD)</span>
+          <span>15 (fél periódus)</span>
+          <span><span class="periodNum">30</span> (Teljes visszaérkezés)</span>
+        </div>
+      </div>
+
+      <!-- 3. ÚJ: Golyók mérete csúszka -->
+      <div class="space-y-1 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/80">
+        <div class="flex justify-between text-xs font-mono">
+          <span class="text-amber-300 font-medium">GOLYÓK MÉRETE (BALL RADIUS)</span>
+          <span id="ballSizeVal" class="text-white font-bold">8.5 px</span>
+        </div>
+        <input id="ballSizeRange" type="range" min="3.0" max="15.0" step="0.5" value="8.5" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer accent-amber-400">
+        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+          <span>3px (Finom pontok)</span>
+          <span>8.5px (Alapértelmezett)</span>
+          <span>15px (Nagy golyók)</span>
+        </div>
+      </div>
+
+      <!-- 4. Átfedés (0% - 50%) -->
+      <div class="space-y-1">
+        <div class="flex justify-between text-xs font-mono">
+          <span class="text-slate-300">ÁTFEDÉS (OVERLAP: 0% – 50%)</span>
+          <span id="overlapVal" class="text-[#00D2FC] font-bold">50%</span>
+        </div>
+        <input id="overlapRange" type="range" min="0" max="50" step="1" value="50" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+        <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+          <span>0% (Egyenkénti cserék)</span>
+          <span class="text-cyan-400 font-semibold">50% (Tökéletes folytonos hullám)</span>
+        </div>
+      </div>
+
+      <!-- 5. Sebesség és 3D Mélység -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-slate-400">SEBESSÉG</span>
+            <span id="speedVal" class="text-emerald-400 font-semibold">1.0x</span>
+          </div>
+          <input id="speedRange" type="range" min="0.2" max="2.8" step="0.1" value="1.0" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+        </div>
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-mono">
+            <span class="text-slate-400">3D MÉLYSÉG</span>
+            <span id="depthVal" class="text-purple-400 font-semibold">100%</span>
+          </div>
+          <input id="depthRange" type="range" min="0" max="140" step="5" value="100" class="w-full h-1.5 bg-slate-800 rounded cursor-pointer">
+        </div>
+      </div>
+
+      <!-- 6. Vizuális kapcsolók -->
+      <div class="flex items-center gap-2 pt-1">
+        <button id="btnToggleLabels" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 font-mono text-xs transition">
+          Betűk: BE
+        </button>
+        <button id="btnToggleTrails" class="flex-1 py-1.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 font-mono text-xs transition">
+          Nyomvonalak: BE
+        </button>
+        <button id="btnReset" class="px-3 py-1.5 rounded-lg bg-rose-950/40 text-rose-300 hover:bg-rose-900/50 border border-rose-800 font-mono text-xs transition">
+          ↺ Reset
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="max-w-4xl mx-auto w-full py-2.5 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 border-t border-slate-800 gap-2">
+    <div class="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-full bg-[#00D2FC] shadow-[0_0_8px_#00D2FC]"></span>
+        <span class="font-mono text-slate-300">A: Világoskék</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-full bg-[#3E1B93] shadow-[0_0_8px_#3E1B93]"></span>
+        <span class="font-mono text-slate-300">B: Indigó</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-full bg-[#D1125A] shadow-[0_0_8px_#D1125A]"></span>
+        <span class="font-mono text-slate-300">C: Magenta</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-full bg-[#FF9F1C] shadow-[0_0_8px_#FF9F1C]"></span>
+        <span class="font-mono text-slate-300">D: Arany</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-full bg-[#005030] shadow-[0_0_8px_#005030]"></span>
+        <span class="font-mono text-slate-300">E: Sötétzöld</span>
+      </div>
+    </div>
+    <div class="font-mono text-[11px] text-slate-500">
+      5 csúcs • <span class="periodNum">30</span> swap zárt ciklus • zökkenőmentes wrap
+    </div>
+  </footer>
+
+  <script>
+    // -------------------------------------------------------------
+    // 1. GEOMETRIA ÉS CSÚCSOK
+    // -------------------------------------------------------------
+    const RADIUS = 64;
+    const VERTICES = [];
+    for (let i = 0; i < 5; i++) {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI / 5);
+      VERTICES.push({
+        x: RADIUS * Math.cos(angle),
+        y: RADIUS * Math.sin(angle)
+      });
+    }
+
+    // 5 szimmetriatengely csere-párok (csillag-átlók):
+    // s=0: (0, 2), s=1: (1, 3), s=2: (2, 4), s=3: (3, 0), s=4: (4, 1)
+    const SWAPS = [
+      [0, 2],
+      [1, 3],
+      [2, 4],
+      [3, 0],
+      [4, 1]
+    ];
+
+    // A kért 5 FIX GOLYÓ (identitásuk és színük soha nem változik!)
+    const BALL_DEFS = [
+      { id: 'A', fill: 'url(#grad-A)', color: '#00D2FC', name: 'Világoskék' },
+      { id: 'B', fill: 'url(#grad-B)', color: '#3E1B93', name: 'Indigó' },
+      { id: 'C', fill: 'url(#grad-C)', color: '#D1125A', name: 'Magenta' },
+      { id: 'D', fill: 'url(#grad-D)', color: '#FF9F1C', name: 'Arany' },
+      { id: 'E', fill: 'url(#grad-E)', color: '#005030', name: 'Sötétzöld' }
+    ];
+
+    // -------------------------------------------------------------
+    // 2. A ZÁRT PERIÓDUS KISZÁMÍTÁSA
+    // Egy kör (5 csere: 1-3, 2-4, 3-5, 4-1, 5-2) után a golyók elrendezése
+    // ABCDE -> BAECD, azaz a permutáció (A B)(C D E). Ennek rendje lcm(2,3) = 6,
+    // tehát 6 kör = 30 csere után áll vissza az eredeti állapot.
+    // Itt nem hardcode-oljuk, hanem szimulációval számoljuk ki: addig cserélünk,
+    // amíg a kiindulási elrendezés vissza nem tér.
+    // ballPosAfterStep[ballIdx][s]: hol áll a golyó az 's' swap után.
+    // -------------------------------------------------------------
+    const ballPosAfterStep = Array.from({ length: 5 }, () => []);
+    let PERIOD;
+    {
+      // Kezdeti állapot: 0:A, 1:B, 2:C, 3:D, 4:E
+      const layout = [0, 1, 2, 3, 4];
+      const isIdentity = () => layout.every((b, v) => b === v);
+      let s = 0;
+      while (true) {
+        for (let v = 0; v < 5; v++) ballPosAfterStep[layout[v]][s] = v;
+        if (s > 0 && isIdentity()) break;
+        const [u, v] = SWAPS[s % 5];
+        [layout[u], layout[v]] = [layout[v], layout[u]];
+        s++;
+        if (s > 1000) throw new Error('A csere-sorozat nem zárul be');
+      }
+      PERIOD = s; // = 30
+    }
+
+    // Segédfüggvény: a golyó pozíciója egy tetszőleges egész swap lépés határán
+    function getBallVertexAtBoundary(ballIdx, integerStep) {
+      const modS = ((integerStep % PERIOD) + PERIOD) % PERIOD;
+      return ballPosAfterStep[ballIdx][modS];
+    }
+
+    // -------------------------------------------------------------
+    // 3. FOLYTONOS, ZÖKKENŐMENTES 3D POZÍCIÓSZÁMÍTÁS (MODULO-WRAPPER)
+    // -------------------------------------------------------------
+    function smoothEase(t) {
+      return 0.5 - 0.5 * Math.cos(Math.PI * t);
+    }
+
+    function calculateBallState(ballIdx, t, overlapRatio, depthFactor) {
+      // Csere időtartama lépésegységben (pl. overlap=50% -> duration=2.0)
+      const duration = 1.0 / (1.0 - overlapRatio);
+
+      // Keresünk olyan swap indexet (s), amely éppen hatással van erre a golyóra
+      // Megvizsgáljuk az aktuális időhöz legközelebbi lépéseket
+      const floorT = Math.floor(t);
+      const candidates = [floorT - 1, floorT, floorT + 1];
+
+      for (let s of candidates) {
+        const startVertex = getBallVertexAtBoundary(ballIdx, s);
+        const endVertex = getBallVertexAtBoundary(ballIdx, s + 1);
+
+        if (startVertex !== endVertex) {
+          // Ez a golyó mozog az s-edik csere során!
+          const dt = t - s;
+          if (dt >= 0 && dt <= duration) {
+            const progress = Math.min(1.0, dt / duration);
+            const eased = smoothEase(progress);
+            const zArc = Math.sin(progress * Math.PI); // Félúton maximális 3D kitérés
+
+            const p0 = VERTICES[startVertex];
+            const p1 = VERTICES[endVertex];
+
+            const x = p0.x + (p1.x - p0.x) * eased;
+            const y = p0.y + (p1.y - p0.y) * eased;
+
+            // A csere melyik felében halad? A swap első tagja jön előre, a második süllyed hátra
+            const swapPair = SWAPS[((s % 5) + 5) % 5];
+            const isForward = (startVertex === swapPair[0]);
+
+            if (isForward) {
+              return {
+                x,
+                y,
+                scale: 1.0 + (0.52 * zArc * depthFactor),
+                brightness: 1.0 + (0.42 * zArc * depthFactor),
+                opacity: 1.0,
+                z: 100 + (zArc * 160)
+              };
+            } else {
+              return {
+                x,
+                y,
+                scale: Math.max(0.42, 1.0 - (0.48 * zArc * depthFactor)),
+                brightness: Math.max(0.38, 1.0 - (0.62 * zArc * depthFactor)),
+                opacity: Math.max(0.55, 1.0 - (0.38 * zArc * depthFactor)),
+                z: 100 - (zArc * 160)
+              };
+            }
+          }
+        }
+      }
+
+      // Nyugalmi fázis
+      const currentVertex = getBallVertexAtBoundary(ballIdx, floorT);
+      const pos = VERTICES[currentVertex];
+      return {
+        x: pos.x,
+        y: pos.y,
+        scale: 1.0,
+        brightness: 1.0,
+        opacity: 1.0,
+        z: 100
+      };
+    }
+
+    // -------------------------------------------------------------
+    // 4. SVG ELEMEK ÉPÍTÉSE
+    // -------------------------------------------------------------
+    const dotsLayer = document.getElementById('dotsLayer');
+    const trailsLayer = document.getElementById('trailsLayer');
+    const ballNodes = [];
+
+    // Halvány csillagvonalak
+    SWAPS.forEach(([u, v]) => {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', VERTICES[u].x);
+      line.setAttribute('y1', VERTICES[u].y);
+      line.setAttribute('x2', VERTICES[v].x);
+      line.setAttribute('y2', VERTICES[v].y);
+      line.setAttribute('stroke', '#38bdf8');
+      line.setAttribute('stroke-width', '1.2');
+      line.setAttribute('stroke-dasharray', '3 3');
+      trailsLayer.appendChild(line);
+    });
+
+    let currentBaseRadius = 8.5;
+
+    // Az 5 golyó létrehozása
+    BALL_DEFS.forEach((bDef, i) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('id', `ball-${bDef.id}`);
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('r', currentBaseRadius.toString());
+      circle.setAttribute('fill', bDef.fill);
+
+      const shine = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      shine.setAttribute('r', currentBaseRadius.toString());
+      shine.setAttribute('fill', 'url(#ball-shine)');
+
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'central');
+      text.setAttribute('font-family', 'JetBrains Mono, monospace');
+      text.setAttribute('font-size', '8');
+      text.setAttribute('font-weight', 'bold');
+      text.setAttribute('fill', '#ffffff');
+      text.setAttribute('pointer-events', 'none');
+      text.textContent = bDef.id;
+
+      g.appendChild(circle);
+      g.appendChild(shine);
+      g.appendChild(text);
+      dotsLayer.appendChild(g);
+
+      ballNodes.push({ g, circle, shine, text, ballIdx: i });
+    });
+
+    // -------------------------------------------------------------
+    // 5. VEZÉRLÉS ÉS ANIMÁCIÓS CIKLUS
+    // -------------------------------------------------------------
+    let overlapPercent = 50;
+    let speedMultiplier = 1.0;
+    let depthIntensity = 1.0;
+    let modeDirection = 1; // 1: CW, -1: CCW, 'pingpong'
+    let currentDirSign = 1;
+    let isPaused = false;
+    let showLabels = true;
+    let showTrails = true;
+
+    let globalT = 0.0;
+    let lastStamp = performance.now();
+
+    // DOM hivatkozások
+    const spinnerWrapper = document.getElementById('spinnerWrapper');
+    const headerStepDisplay = document.getElementById('headerStepDisplay');
+    const activeSwapPairDisplay = document.getElementById('activeSwapPairDisplay');
+    const scrubRange = document.getElementById('scrubRange');
+    const scrubValDisplay = document.getElementById('scrubValDisplay');
+    const ballSizeRange = document.getElementById('ballSizeRange');
+    const ballSizeVal = document.getElementById('ballSizeVal');
+    const overlapRange = document.getElementById('overlapRange');
+    const overlapVal = document.getElementById('overlapVal');
+    const speedRange = document.getElementById('speedRange');
+    const speedVal = document.getElementById('speedVal');
+    const depthRange = document.getElementById('depthRange');
+    const depthVal = document.getElementById('depthVal');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnDirCw = document.getElementById('btnDirCw');
+    const btnDirCcw = document.getElementById('btnDirCcw');
+    const btnDirPingPong = document.getElementById('btnDirPingPong');
+    const btnToggleLabels = document.getElementById('btnToggleLabels');
+    const btnToggleTrails = document.getElementById('btnToggleTrails');
+    const btnReset = document.getElementById('btnReset');
+    const statusDirectionBadge = document.getElementById('statusDirectionBadge');
+
+    // Periódus kiírása mindenhova, ahol szerepel
+    document.querySelectorAll('.periodNum').forEach(el => { el.textContent = PERIOD; });
+    scrubRange.max = PERIOD;
+
+    function updateBallRadius(newR) {
+      currentBaseRadius = newR;
+      ballNodes.forEach(({ circle, shine, text }) => {
+        circle.setAttribute('r', currentBaseRadius.toString());
+        shine.setAttribute('r', currentBaseRadius.toString());
+        text.setAttribute('font-size', Math.max(6, currentBaseRadius * 0.95).toFixed(1));
+      });
+    }
+
+    function renderFrame(timeVal) {
+      const overlapRatio = overlapPercent / 100.0;
+
+      const states = [];
+      for (let i = 0; i < 5; i++) {
+        states.push({
+          idx: i,
+          state: calculateBallState(i, timeVal, overlapRatio, depthIntensity)
+        });
+      }
+
+      // Szigorú Z-mélység rendezés: a közelebbi golyó a DOM-ban felülre kerül
+      states.sort((a, b) => a.state.z - b.state.z);
+
+      states.forEach(({ idx, state }) => {
+        const node = ballNodes[idx];
+        dotsLayer.appendChild(node.g);
+
+        node.g.setAttribute(
+          'transform',
+          `translate(${state.x.toFixed(2)}, ${state.y.toFixed(2)}) scale(${state.scale.toFixed(3)})`
+        );
+        node.g.setAttribute('opacity', state.opacity.toFixed(2));
+
+        if (state.z > 125) {
+          node.g.style.filter = `brightness(${state.brightness.toFixed(2)}) drop-shadow(0 6px 9px rgba(0,0,0,0.85))`;
+        } else {
+          node.g.style.filter = `brightness(${state.brightness.toFixed(2)})`;
+        }
+
+        node.text.style.display = showLabels ? 'block' : 'none';
+      });
+
+      // Kijelzők és scrubber szinkronizálása a PERIOD lépéses perióduson belül
+      const normalizedT = ((timeVal % PERIOD) + PERIOD) % PERIOD;
+      headerStepDisplay.textContent = `${normalizedT.toFixed(2)} / ${PERIOD}`;
+      scrubValDisplay.textContent = `${normalizedT.toFixed(2)} / ${PERIOD}`;
+      scrubRange.value = normalizedT.toFixed(2);
+
+      const activeSwap = SWAPS[Math.floor(normalizedT) % 5];
+      activeSwapPairDisplay.textContent = `Tengely-pár: ${activeSwap[0] + 1} ↔ ${activeSwap[1] + 1}`;
+    }
+
+    function animate(currentTime) {
+      const deltaMs = Math.min(60, currentTime - lastStamp);
+      lastStamp = currentTime;
+
+      if (!isPaused) {
+        // Alapvető lépési sebesség
+        const stepRate = (deltaMs / 380) * speedMultiplier;
+
+        if (modeDirection === 'pingpong') {
+          globalT += stepRate * currentDirSign;
+          if (globalT >= PERIOD) {
+            globalT = PERIOD;
+            currentDirSign = -1;
+          } else if (globalT <= 0) {
+            globalT = 0;
+            currentDirSign = 1;
+          }
+        } else {
+          globalT += stepRate * modeDirection;
+        }
+
+        renderFrame(globalT);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Dobozméret váltó
+    function setBoxSize(px) {
+      spinnerWrapper.style.width = px + 'px';
+      spinnerWrapper.style.height = px + 'px';
+      document.querySelectorAll('.size-btn').forEach(btn => {
+        if (parseInt(btn.getAttribute('data-size')) === px) {
+          btn.className = 'size-btn px-2 py-0.5 rounded btn-active transition';
+        } else {
+          btn.className = 'size-btn px-2 py-0.5 rounded text-slate-400 hover:text-white transition';
+        }
+      });
+    }
+
+    // Golyóméret csúszka
+    ballSizeRange.addEventListener('input', (e) => {
+      const r = parseFloat(e.target.value);
+      ballSizeVal.textContent = `${r.toFixed(1)} px`;
+      updateBallRadius(r);
+    });
+
+    // Kézi tekerő
+    scrubRange.addEventListener('input', (e) => {
+      isPaused = true;
+      btnPlayPause.textContent = '▶ Lejátszás';
+      globalT = parseFloat(e.target.value);
+      renderFrame(globalT);
+    });
+
+    // Átfedés
+    overlapRange.addEventListener('input', (e) => {
+      overlapPercent = parseInt(e.target.value);
+      overlapVal.textContent = `${overlapPercent}%`;
+      renderFrame(globalT);
+    });
+
+    // Sebesség
+    speedRange.addEventListener('input', (e) => {
+      speedMultiplier = parseFloat(e.target.value);
+      speedVal.textContent = `${speedMultiplier.toFixed(1)}x`;
+    });
+
+    // 3D mélység
+    depthRange.addEventListener('input', (e) => {
+      depthIntensity = parseInt(e.target.value) / 100;
+      depthVal.textContent = `${e.target.value}%`;
+      renderFrame(globalT);
+    });
+
+    // Szünet / Lejátszás
+    btnPlayPause.addEventListener('click', () => {
+      isPaused = !isPaused;
+      btnPlayPause.textContent = isPaused ? '▶ Lejátszás' : '⏸ Szünet';
+      btnPlayPause.classList.toggle('btn-active', isPaused);
+    });
+
+    // Irányválasztás
+    function setDirectionMode(mode) {
+      modeDirection = mode;
+      btnDirCw.className = 'py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition';
+      btnDirCcw.className = 'py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition';
+      btnDirPingPong.className = 'py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition';
+
+      if (mode === 1) {
+        btnDirCw.className = 'py-2 rounded-xl btn-active border border-slate-700 transition';
+        statusDirectionBadge.textContent = '↻ Óramutató';
+      } else if (mode === -1) {
+        btnDirCcw.className = 'py-2 rounded-xl btn-active border border-slate-700 transition';
+        statusDirectionBadge.textContent = '↺ Ellentétes';
+      } else {
+        btnDirPingPong.className = 'py-2 rounded-xl btn-active border border-slate-700 transition';
+        statusDirectionBadge.textContent = '⇄ Ping-Pong';
+      }
+    }
+
+    btnDirCw.addEventListener('click', () => setDirectionMode(1));
+    btnDirCcw.addEventListener('click', () => setDirectionMode(-1));
+    btnDirPingPong.addEventListener('click', () => setDirectionMode('pingpong'));
+
+    // Betűk
+    btnToggleLabels.addEventListener('click', () => {
+      showLabels = !showLabels;
+      btnToggleLabels.textContent = showLabels ? 'Betűk: BE' : 'Betűk: KI';
+      btnToggleLabels.classList.toggle('text-slate-500', !showLabels);
+      renderFrame(globalT);
+    });
+
+    // Nyomvonalak
+    btnToggleTrails.addEventListener('click', () => {
+      showTrails = !showTrails;
+      trailsLayer.style.display = showTrails ? 'block' : 'none';
+      btnToggleTrails.textContent = showTrails ? 'Nyomvonalak: BE' : 'Nyomvonalak: KI';
+      btnToggleTrails.classList.toggle('text-slate-500', !showTrails);
+    });
+
+    // Reset
+    btnReset.addEventListener('click', () => {
+      globalT = 0;
+      currentDirSign = 1;
+      renderFrame(globalT);
+    });
+
+    // Indítás
+    requestAnimationFrame((t) => {
+      lastStamp = t;
+      requestAnimationFrame(animate);
+    });
+  </script>
+</body>
+</html>
